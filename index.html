@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImovAval — Aluguel com Transparência</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-mid: #9FE1CB;
+      --green-dark: #085041;
+      --amber: #BA7517;
+      --amber-light: #FAEEDA;
+      --coral: #D85A30;
+      --coral-light: #FAECE7;
+      --purple-light: #EEEDFE;
+      --gray: #5F5E5A;
+      --gray-light: #F1EFE8;
+      --blue-light: #E6F1FB;
+      --text: #1a1a18;
+      --text-muted: #6b6b67;
+      --bg: #ffffff;
+      --bg2: #f7f6f2;
+      --bg3: #f0efe9;
+      --border: rgba(0,0,0,0.10);
+      --border-md: rgba(0,0,0,0.18);
+      --radius: 10px;
+      --radius-lg: 14px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.07);
+      --font-head: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    .topbar {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-inner {
+      max-width: 1000px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px;
+    }
+    .logo {
+      font-family: var(--font-head); font-size: 20px; font-weight: 700;
+      color: var(--green); display: flex; align-items: center; gap: 9px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--green); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 17px; height: 17px; fill: white; }
+    .nav-tabs { display: flex; gap: 2px; background: var(--bg2); border-radius: var(--radius); padding: 3px; }
+    .nav-tab {
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; color: var(--text-muted); border: none; background: transparent;
+      font-family: var(--font-body); transition: all 0.15s;
+    }
+    .nav-tab.active { background: var(--bg); color: var(--text); box-shadow: var(--shadow); border: 0.5px solid var(--border); }
+    .nav-cta {
+      padding: 8px 18px; border-radius: var(--radius); background: var(--green);
+      color: white; font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+      font-family: var(--font-body); transition: background 0.15s;
+    }
+    .nav-cta:hover { background: var(--green-dark); }
+
+    /* LAYOUT */
+    .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* HERO */
+    .hero {
+      background: var(--bg); border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border); padding: 36px 40px;
+      margin-bottom: 20px; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, var(--green-light) 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-light); color: var(--green-dark);
+      font-size: 12px; font-weight: 600; padding: 4px 13px;
+      border-radius: 20px; margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: var(--font-head); font-size: 30px; font-weight: 700;
+      line-height: 1.2; margin-bottom: 10px;
+    }
+    .hero-title span { color: var(--green); }
+    .hero-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; max-width: 520px; line-height: 1.6; }
+
+    .search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+    .search-bar input {
+      flex: 1; padding: 11px 15px; border-radius: var(--radius);
+      border: 0.5px solid var(--border-md); background: var(--bg2);
+      font-family: var(--font-body); font-size: 14px; color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .search-bar input:focus { border-color: var(--green); background: var(--bg); }
+    .search-bar select {
+      padding: 11px 13px; border-radius: var(--radius);
+      border: 0.5px solid var(--border-md); background: var(--bg2);
+      font-family: var(--font-body); font-size: 13px; color: var(--text);
+      outline: none; cursor: pointer;
+    }
+    .search-btn {
+      padding: 11px 22px; background: var(--green); color: white; border: none;
+      border-radius: var(--radius); font-family: var(--font-body); font-size: 14px;
+      font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s;
+    }
+    .search-btn:hover { background: var(--green-dark); }
+
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-chip {
+      padding: 5px 13px; border-radius: 20px; border: 0.5px solid var(--border-md);
+      font-size: 12px; cursor: pointer; background: var(--bg); color: var(--text-muted);
+      font-family: var(--font-body); transition: all 0.15s; font-weight: 500;
+    }
+    .filter-chip:hover { border-color: var(--green); color: var(--green-dark); }
+    .filter-chip.sel { background: var(--green-light); color: var(--green-dark); border-color: var(--green); }
+
+    /* METRICS */
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+    .metric {
+      background: var(--bg); border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border); padding: 18px 20px;
+    }
+    .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+    .metric-value { font-family: var(--font-head); font-size: 26px; font-weight: 700; color: var(--text); }
+    .metric-sub { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 600; }
+
+    /* SECTION */
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; }
+    .see-all { font-size: 13px; color: var(--green); cursor: pointer; background: none; border: none; font-family: var(--font-body); font-weight: 600; }
+
+    /* IMOVEIS GRID */
+    .imoveis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .imovel-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+      transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .imovel-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(29,158,117,0.12); }
+    .imovel-img { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 44px; position: relative; }
+    .imovel-badge { position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.3px; }
+    .badge-avail { background: var(--green-light); color: var(--green-dark); }
+    .badge-hot { background: var(--amber-light); color: var(--amber); }
+    .imovel-body { padding: 14px; }
+    .imovel-price { font-family: var(--font-head); font-size: 19px; font-weight: 700; color: var(--text); }
+    .imovel-price span { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+    .imovel-addr { font-size: 12px; color: var(--text-muted); margin: 3px 0 10px; }
+    .imovel-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .imovel-tag { font-size: 11px; background: var(--gray-light); color: var(--gray); padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+    .rating-row { display: flex; align-items: center; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+    .stars { color: #F59E0B; font-size: 12px; }
+    .rating-val { font-size: 12px; font-weight: 700; }
+    .rating-count { font-size: 11px; color: var(--text-muted); }
+
+    /* IMOBILIÁRIAS */
+    .page-header { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 24px 28px; margin-bottom: 20px; }
+    .page-header h2 { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .page-header p { font-size: 14px; color: var(--text-muted); }
+
+    .imob-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .imob-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px; cursor: pointer;
+      transition: all 0.15s; box-shadow: var(--shadow);
+    }
+    .imob-card:hover { border-color: var(--green); }
+    .imob-avatar { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .imob-info { flex: 1; }
+    .imob-name { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+    .imob-meta { font-size: 12px; color: var(--text-muted); }
+    .imob-stats { text-align: right; }
+    .imob-rating { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text); }
+    .imob-reviews { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .verified { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--green); font-weight: 700; margin-left: 6px; }
+    .imob-cta {
+      width: 100%; padding: 13px; border-radius: var(--radius);
+      background: var(--green-light); color: var(--green-dark); border: 0.5px solid var(--green);
+      font-family: var(--font-head); font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .imob-cta:hover { background: var(--green-mid); }
+
+    /* AVALIAÇÕES */
+    .av-form {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+    .av-form-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 22px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+    .form-input {
+      width: 100%; padding: 10px 13px; border-radius: var(--radius);
+      border: 0.5px solid var(--border-md); background: var(--bg2);
+      font-family: var(--font-body); font-size: 14px; color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--green); background: var(--bg); }
+    .form-textarea {
+      width: 100%; padding: 10px 13px; border-radius: var(--radius);
+      border: 0.5px solid var(--border-md); background: var(--bg2);
+      font-family: var(--font-body); font-size: 14px; color: var(--text);
+      min-height: 90px; resize: vertical; outline: none; transition: border-color 0.15s;
+    }
+    .form-textarea:focus { border-color: var(--green); background: var(--bg); }
+
+    .star-rating { display: flex; gap: 6px; }
+    .star-btn { background: none; border: none; font-size: 26px; cursor: pointer; color: #D3D1C7; transition: color 0.1s, transform 0.1s; }
+    .star-btn:hover { transform: scale(1.15); }
+    .star-btn.lit { color: #F59E0B; }
+
+    .rating-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .rating-cat { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid var(--border); }
+    .rating-cat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+    .rating-cat-stars { display: flex; gap: 4px; }
+    .mini-star { background: none; border: none; font-size: 18px; cursor: pointer; color: #D3D1C7; transition: color 0.1s; }
+    .mini-star.lit { color: #F59E0B; }
+
+    .submit-btn {
+      width: 100%; padding: 13px; background: var(--green); color: white;
+      border: none; border-radius: var(--radius); font-family: var(--font-head);
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+      margin-top: 6px;
+    }
+    .submit-btn:hover { background: var(--green-dark); }
+
+    .review-list { display: flex; flex-direction: column; gap: 14px; }
+    .review-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow);
+    }
+    .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .reviewer-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+    .reviewer-name { font-size: 14px; font-weight: 600; }
+    .review-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .review-prop { font-size: 12px; color: var(--green); margin-bottom: 8px; font-weight: 600; }
+    .review-text { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 12px; }
+    .review-cats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .review-cat-badge { font-size: 11px; background: var(--bg2); padding: 4px 11px; border-radius: 20px; color: var(--text-muted); font-weight: 500; border: 0.5px solid var(--border); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg); border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border); padding: 28px 28px 24px;
+      width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .modal-close {
+      background: var(--bg2); border: 0.5px solid var(--border); width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer; font-size: 15px; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: var(--bg3); }
+    .modal-emoji { height: 150px; background: var(--bg2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 64px; margin-bottom: 18px; }
+    .modal-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+    .modal-addr { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+    .modal-price { font-family: var(--font-head); font-size: 28px; font-weight: 700; color: var(--green); margin-bottom: 16px; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .modal-info { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; border: 0.5px solid var(--border); }
+    .modal-info-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .modal-info-val { font-size: 15px; font-weight: 600; }
+    .modal-imob { display: flex; align-items: center; gap: 12px; background: var(--bg2); border-radius: var(--radius); padding: 14px; margin-bottom: 18px; border: 0.5px solid var(--border); }
+    .modal-contact-btn {
+      width: 100%; padding: 13px; background: var(--green); color: white; border: none;
+      border-radius: var(--radius); font-family: var(--font-head); font-size: 15px;
+      font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: background 0.15s;
+    }
+    .modal-contact-btn:hover { background: var(--green-dark); }
+    .modal-review-btn {
+      width: 100%; padding: 13px; background: transparent; color: var(--green);
+      border: 0.5px solid var(--green); border-radius: var(--radius);
+      font-family: var(--font-head); font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .modal-review-btn:hover { background: var(--green-light); }
+
+    /* PERFIL */
+    .profile-card {
+      background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+      padding: 28px 32px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px;
+      box-shadow: var(--shadow);
+    }
+    .profile-avatar {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: var(--green-light); display: flex; align-items: center;
+      justify-content: center; font-family: var(--font-head); font-size: 24px;
+      font-weight: 700; color: var(--green-dark); flex-shrink: 0;
+    }
+    .profile-name { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
+    .profile-meta { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+    .profile-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; background: var(--amber-light); color: var(--amber); padding: 4px 12px; border-radius: 20px; margin-top: 8px; font-weight: 700; }
+
+    .activity-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+    .activity-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
+    .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .activity-item:first-child { padding-top: 0; }
+    .activity-icon { width: 38px; height: 38px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 17px; }
+    .activity-text { flex: 1; }
+    .activity-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .activity-sub { font-size: 12px; color: var(--text-muted); }
+    .activity-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+    /* TOAST */
+    .toast {
+      display: none; position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: var(--green-dark); color: white; padding: 13px 28px;
+      border-radius: var(--radius); font-size: 14px; font-weight: 600; z-index: 300;
+      font-family: var(--font-body); box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .topbar-inner { padding: 0 16px; }
+      .nav-tabs { display: none; }
+      .container { padding: 20px 16px; }
+      .hero { padding: 24px 20px; }
+      .hero-title { font-size: 22px; }
+      .search-bar { flex-wrap: wrap; }
+      .metrics { grid-template-columns: 1fr; }
+      .imoveis-grid { grid-template-columns: 1fr; }
+      .rating-cats { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .modal-grid { grid-template-columns: 1fr; }
+      .mob-nav {
+        display: flex !important;
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: var(--bg); border-top: 0.5px solid var(--border);
+        padding: 10px 0 env(safe-area-inset-bottom,10px);
+        z-index: 100; justify-content: space-around;
+      }
+      .container { padding-bottom: 80px; }
+    }
+
+    .mob-nav { display: none; }
+    .mob-nav-btn { background: none; border: none; font-family: var(--font-body); font-size: 11px; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 12px; }
+    .mob-nav-btn.active { color: var(--green); }
+    .mob-nav-icon { font-size: 20px; }
+
+    /* CADASTRO MODAL */
+    .cad-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); z-index: 300; align-items: center; justify-content: center; padding: 20px;
+    }
+    .cad-overlay.open { display: flex; }
+    .cad-modal {
+      background: var(--bg); border-radius: var(--radius-lg); padding: 36px 32px;
+      width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.2s ease;
+    }
+    .cad-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .cad-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    .cad-type { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .cad-type-btn {
+      padding: 16px; border-radius: var(--radius); border: 0.5px solid var(--border-md);
+      background: var(--bg2); cursor: pointer; text-align: center; transition: all 0.15s;
+    }
+    .cad-type-btn:hover, .cad-type-btn.sel { border-color: var(--green); background: var(--green-light); }
+    .cad-type-btn .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+    .cad-type-btn .label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cad-type-btn .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .cad-submit {
+      width: 100%; padding: 13px; background: var(--green); color: white; border: none;
+      border-radius: var(--radius); font-family: var(--font-head); font-size: 15px;
+      font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .cad-submit:hover { background: var(--green-dark); }
+    .cad-cancel { width: 100%; padding: 10px; background: transparent; color: var(--text-muted); border: none; font-family: var(--font-body); font-size: 13px; cursor: pointer; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        </div>
+        ImovAval
+      </a>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showPage('busca',this)">Buscar</button>
+        <button class="nav-tab" onclick="showPage('imobs',this)">Imobiliárias</button>
+        <button class="nav-tab" onclick="showPage('avaliacoes',this)">Avaliações</button>
+        <button class="nav-tab" onclick="showPage('perfil',this)">Minha conta</button>
+      </div>
+      <button class="nav-cta" onclick="openCad()">Cadastrar</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- BUSCA -->
+    <div id="page-busca" class="page active">
+      <div class="hero">
+        <div class="hero-badge">✦ 847 imóveis disponíveis agora</div>
+        <h1 class="hero-title">Encontre seu próximo lar<br>com <span>transparência real</span></h1>
+        <p class="hero-sub">Avaliações reais de ex-inquilinos, imobiliárias verificadas e imóveis com histórico completo. Sem surpresas.</p>
+        <div class="search-bar">
+          <input type="text" placeholder="Bairro, cidade ou endereço..." />
+          <select>
+            <option>Tipo de imóvel</option>
+            <option>Apartamento</option>
+            <option>Casa</option>
+            <option>Studio</option>
+            <option>Kitnet</option>
+            <option>Cobertura</option>
+          </select>
+          <button class="search-btn">Buscar</button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip sel" onclick="toggleChip(this)">Até R$ 2.000</button>
+          <button class="filter-chip" onclick="toggleChip(this)">2 quartos+</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Pet friendly</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Avaliação 4+</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Mobiliado</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Garagem</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Academia</button>
+          <button class="filter-chip" onclick="toggleChip(this)">Piscina</button>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Imóveis avaliados</div>
+          <div class="metric-value">4.218</div>
+          <div class="metric-sub">↑ +83 esse mês</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Imobiliárias parceiras</div>
+          <div class="metric-value">139</div>
+          <div class="metric-sub">↑ +12 esse mês</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Avaliações publicadas</div>
+          <div class="metric-value">11.4k</div>
+          <div class="metric-sub">↑ +340 essa semana</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <span class="section-title">Imóveis em destaque</span>
+        <button class="see-all">ver todos →</button>
+      </div>
+      <div class="imoveis-grid">
+        <div class="imovel-card" onclick="openModal('apto1')">
+          <div class="imovel-img" style="background:#E1F5EE">🏢<span class="imovel-badge badge-hot">⚡ Popular</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 1.800<span>/mês</span></div>
+            <div class="imovel-addr">Centro, Novo Hamburgo</div>
+            <div class="imovel-tags"><span class="imovel-tag">2 quartos</span><span class="imovel-tag">65m²</span><span class="imovel-tag">Pet</span></div>
+            <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-val">4.8</span><span class="rating-count">(23 avaliações)</span></div>
+          </div>
+        </div>
+        <div class="imovel-card" onclick="openModal('casa1')">
+          <div class="imovel-img" style="background:#FAEEDA">🏠<span class="imovel-badge badge-avail">Disponível</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 2.400<span>/mês</span></div>
+            <div class="imovel-addr">Hamburgo Velho, NH</div>
+            <div class="imovel-tags"><span class="imovel-tag">3 quartos</span><span class="imovel-tag">120m²</span><span class="imovel-tag">Garagem</span></div>
+            <div class="rating-row"><span class="stars">★★★★☆</span><span class="rating-val">4.2</span><span class="rating-count">(11 avaliações)</span></div>
+          </div>
+        </div>
+        <div class="imovel-card" onclick="openModal('studio1')">
+          <div class="imovel-img" style="background:#EEEDFE">🛋️<span class="imovel-badge badge-avail">Disponível</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 1.200<span>/mês</span></div>
+            <div class="imovel-addr">Rio Branco, NH</div>
+            <div class="imovel-tags"><span class="imovel-tag">Studio</span><span class="imovel-tag">38m²</span><span class="imovel-tag">Mobiliado</span></div>
+            <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-val">4.9</span><span class="rating-count">(7 avaliações)</span></div>
+          </div>
+        </div>
+        <div class="imovel-card" onclick="openModal('cobert1')">
+          <div class="imovel-img" style="background:#FAECE7">🏙️<span class="imovel-badge badge-hot">⚡ Popular</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 4.500<span>/mês</span></div>
+            <div class="imovel-addr">São Leopoldo Centro</div>
+            <div class="imovel-tags"><span class="imovel-tag">Cobertura</span><span class="imovel-tag">180m²</span><span class="imovel-tag">Piscina</span></div>
+            <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-val">4.6</span><span class="rating-count">(5 avaliações)</span></div>
+          </div>
+        </div>
+        <div class="imovel-card" onclick="openModal('kit1')">
+          <div class="imovel-img" style="background:#E6F1FB">🛏️<span class="imovel-badge badge-avail">Disponível</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 850<span>/mês</span></div>
+            <div class="imovel-addr">Canoas, RS</div>
+            <div class="imovel-tags"><span class="imovel-tag">Kitnet</span><span class="imovel-tag">28m²</span><span class="imovel-tag">Condomínio inc.</span></div>
+            <div class="rating-row"><span class="stars">★★★★☆</span><span class="rating-val">3.9</span><span class="rating-count">(14 avaliações)</span></div>
+          </div>
+        </div>
+        <div class="imovel-card" onclick="openModal('casa2')">
+          <div class="imovel-img" style="background:#EAF3DE">🌿<span class="imovel-badge badge-avail">Disponível</span></div>
+          <div class="imovel-body">
+            <div class="imovel-price">R$ 3.100<span>/mês</span></div>
+            <div class="imovel-addr">Sapiranga, RS</div>
+            <div class="imovel-tags"><span class="imovel-tag">4 quartos</span><span class="imovel-tag">200m²</span><span class="imovel-tag">Quintal</span></div>
+            <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-val">4.7</span><span class="rating-count">(9 avaliações)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMOBILIÁRIAS -->
+    <div id="page-imobs" class="page">
+      <div class="page-header">
+        <h2>Imobiliárias parceiras</h2>
+        <p>Todas verificadas e avaliadas por inquilinos reais. Transparência de ponta a ponta.</p>
+      </div>
+      <div class="imob-list">
+        <div class="imob-card">
+          <div class="imob-avatar" style="background:#E1F5EE">🏦</div>
+          <div class="imob-info">
+            <div class="imob-name">Premier Imóveis <span class="verified">✓ verificada</span></div>
+            <div class="imob-meta">Novo Hamburgo · 147 imóveis ativos · desde 2018</div>
+          </div>
+          <div class="imob-stats"><div class="imob-rating">4.7</div><div style="color:#F59E0B;font-size:14px">★★★★★</div><div class="imob-reviews">189 avaliações</div></div>
+        </div>
+        <div class="imob-card">
+          <div class="imob-avatar" style="background:#FAEEDA">🏡</div>
+          <div class="imob-info">
+            <div class="imob-name">Lar Ideal <span class="verified">✓ verificada</span></div>
+            <div class="imob-meta">Canoas e Região · 89 imóveis ativos · desde 2021</div>
+          </div>
+          <div class="imob-stats"><div class="imob-rating">4.3</div><div style="color:#F59E0B;font-size:14px">★★★★☆</div><div class="imob-reviews">74 avaliações</div></div>
+        </div>
+        <div class="imob-card">
+          <div class="imob-avatar" style="background:#FAECE7">🔑</div>
+          <div class="imob-info">
+            <div class="imob-name">Chaves & Cia</div>
+            <div class="imob-meta">Porto Alegre · 212 imóveis ativos · desde 2015</div>
+          </div>
+          <div class="imob-stats"><div class="imob-rating">3.8</div><div style="color:#F59E0B;font-size:14px">★★★★☆</div><div class="imob-reviews">321 avaliações</div></div>
+        </div>
+        <div class="imob-card">
+          <div class="imob-avatar" style="background:#E6F1FB">🏢</div>
+          <div class="imob-info">
+            <div class="imob-name">Metro Aluguéis <span class="verified">✓ verificada</span></div>
+            <div class="imob-meta">São Leopoldo · 63 imóveis ativos · desde 2020</div>
+          </div>
+          <div class="imob-stats"><div class="imob-rating">4.5</div><div style="color:#F59E0B;font-size:14px">★★★★★</div><div class="imob-reviews">98 avaliações</div></div>
+        </div>
+        <div class="imob-card">
+          <div class="imob-avatar" style="background:#EAF3DE">🌿</div>
+          <div class="imob-info">
+            <div class="imob-name">Verde & Lar</div>
+            <div class="imob-meta">Sapiranga e Serra Gaúcha · 41 imóveis ativos · desde 2022</div>
+          </div>
+          <div class="imob-stats"><div class="imob-rating">4.1</div><div style="color:#F59E0B;font-size:14px">★★★★☆</div><div class="imob-reviews">29 avaliações</div></div>
+        </div>
+      </div>
+      <button class="imob-cta" onclick="openCad()">Para imobiliárias: cadastrar minha empresa →</button>
+    </div>
+
+    <!-- AVALIAÇÕES -->
+    <div id="page-avaliacoes" class="page">
+      <div class="av-form">
+        <div class="av-form-title">Avaliar período de aluguel</div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Imóvel / endereço</label>
+            <input class="form-input" type="text" placeholder="Ex: Rua das Flores 123, Apto 42, NH" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Imobiliária responsável</label>
+            <select class="form-input">
+              <option value="">Selecione...</option>
+              <option>Premier Imóveis</option>
+              <option>Lar Ideal</option>
+              <option>Chaves & Cia</option>
+              <option>Metro Aluguéis</option>
+              <option>Verde & Lar</option>
+              <option>Outra</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Período do aluguel</label>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" type="month" style="flex:1" />
+              <input class="form-input" type="month" style="flex:1" />
+            </div>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Avaliação geral</label>
+            <div class="star-rating" id="stars-geral">
+              <button class="star-btn" onclick="setStars('geral',1)">★</button>
+              <button class="star-btn" onclick="setStars('geral',2)">★</button>
+              <button class="star-btn" onclick="setStars('geral',3)">★</button>
+              <button class="star-btn" onclick="setStars('geral',4)">★</button>
+              <button class="star-btn" onclick="setStars('geral',5)">★</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rating-cats">
+          <div class="rating-cat">
+            <div class="rating-cat-label">🏢 Imobiliária</div>
+            <div class="rating-cat-stars" id="stars-imob">
+              <button class="mini-star" onclick="setStars('imob',1)">★</button><button class="mini-star" onclick="setStars('imob',2)">★</button><button class="mini-star" onclick="setStars('imob',3)">★</button><button class="mini-star" onclick="setStars('imob',4)">★</button><button class="mini-star" onclick="setStars('imob',5)">★</button>
+            </div>
+          </div>
+          <div class="rating-cat">
+            <div class="rating-cat-label">🏠 Estado do imóvel</div>
+            <div class="rating-cat-stars" id="stars-imovel">
+              <button class="mini-star" onclick="setStars('imovel',1)">★</button><button class="mini-star" onclick="setStars('imovel',2)">★</button><button class="mini-star" onclick="setStars('imovel',3)">★</button><button class="mini-star" onclick="setStars('imovel',4)">★</button><button class="mini-star" onclick="setStars('imovel',5)">★</button>
+            </div>
+          </div>
+          <div class="rating-cat">
+            <div class="rating-cat-label">👤 Proprietário</div>
+            <div class="rating-cat-stars" id="stars-prop">
+              <button class="mini-star" onclick="setStars('prop',1)">★</button><button class="mini-star" onclick="setStars('prop',2)">★</button><button class="mini-star" onclick="setStars('prop',3)">★</button><button class="mini-star" onclick="setStars('prop',4)">★</button><button class="mini-star" onclick="setStars('prop',5)">★</button>
+            </div>
+          </div>
+          <div class="rating-cat">
+            <div class="rating-cat-label">📍 Localização</div>
+            <div class="rating-cat-stars" id="stars-local">
+              <button class="mini-star" onclick="setStars('local',1)">★</button><button class="mini-star" onclick="setStars('local',2)">★</button><button class="mini-star" onclick="setStars('local',3)">★</button><button class="mini-star" onclick="setStars('local',4)">★</button><button class="mini-star" onclick="setStars('local',5)">★</button>
+            </div>
+          </div>
+          <div class="rating-cat">
+            <div class="rating-cat-label">🔧 Manutenção</div>
+            <div class="rating-cat-stars" id="stars-manut">
+              <button class="mini-star" onclick="setStars('manut',1)">★</button><button class="mini-star" onclick="setStars('manut',2)">★</button><button class="mini-star" onclick="setStars('manut',3)">★</button><button class="mini-star" onclick="setStars('manut',4)">★</button><button class="mini-star" onclick="setStars('manut',5)">★</button>
+            </div>
+          </div>
+          <div class="rating-cat">
+            <div class="rating-cat-label">💰 Custo-benefício</div>
+            <div class="rating-cat-stars" id="stars-custo">
+              <button class="mini-star" onclick="setStars('custo',1)">★</button><button class="mini-star" onclick="setStars('custo',2)">★</button><button class="mini-star" onclick="setStars('custo',3)">★</button><button class="mini-star" onclick="setStars('custo',4)">★</button><button class="mini-star" onclick="setStars('custo',5)">★</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sua experiência</label>
+          <textarea class="form-textarea" placeholder="Conte como foi morar neste imóvel, o atendimento da imobiliária, relação com o proprietário, processo de saída..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Você recomendaria?</label>
+          <div style="display:flex;gap:10px">
+            <button class="filter-chip" onclick="toggleChip(this)" style="font-size:13px;padding:8px 18px">👍 Sim</button>
+            <button class="filter-chip" onclick="toggleChip(this)" style="font-size:13px;padding:8px 18px">👎 Não</button>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="showToast()">Publicar avaliação</button>
+      </div>
+
+      <div class="section-head">
+        <span class="section-title">Avaliações recentes</span>
+        <button class="see-all">ordenar por →</button>
+      </div>
+      <div class="review-list">
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar" style="background:#E1F5EE;color:#085041">MF</div>
+            <div><div class="reviewer-name">Maria F.</div><div class="review-date">Março 2025 · Morou 18 meses</div></div>
+            <div style="margin-left:auto;text-align:right"><div style="color:#F59E0B;font-size:14px">★★★★★</div><div style="font-size:15px;font-weight:700">4.9</div></div>
+          </div>
+          <div class="review-prop">🏢 Apto Centro, Novo Hamburgo · Premier Imóveis</div>
+          <p class="review-text">Fui muito bem atendida durante todo o período. O imóvel estava em ótimo estado, nada de surpresa. A devolução do depósito foi rápida e sem burocracia. Processo de saída muito tranquilo. Recomendo muito a Premier!</p>
+          <div class="review-cats">
+            <span class="review-cat-badge">Imobiliária ★4.8</span>
+            <span class="review-cat-badge">Imóvel ★5.0</span>
+            <span class="review-cat-badge">Proprietário ★4.9</span>
+            <span class="review-cat-badge">Localização ★5.0</span>
+            <span class="review-cat-badge">Manutenção ★4.7</span>
+            <span class="review-cat-badge">Custo-benefício ★5.0</span>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar" style="background:#FAEEDA;color:#633806">RS</div>
+            <div><div class="reviewer-name">Rafael S.</div><div class="review-date">Janeiro 2025 · Morou 8 meses</div></div>
+            <div style="margin-left:auto;text-align:right"><div style="color:#F59E0B;font-size:14px">★★★☆☆</div><div style="font-size:15px;font-weight:700">3.2</div></div>
+          </div>
+          <div class="review-prop">🏠 Casa Hamburgo Velho · Lar Ideal</div>
+          <p class="review-text">O imóvel tinha alguns problemas que não foram mencionados antes de assinar o contrato. A imobiliária demorou para resolver os reparos. Proprietário foi atencioso, mas o processo de saída foi burocrático e demorou 45 dias para devolver o depósito.</p>
+          <div class="review-cats">
+            <span class="review-cat-badge">Imobiliária ★2.5</span>
+            <span class="review-cat-badge">Imóvel ★3.0</span>
+            <span class="review-cat-badge">Proprietário ★4.0</span>
+            <span class="review-cat-badge">Localização ★4.5</span>
+            <span class="review-cat-badge">Manutenção ★2.0</span>
+            <span class="review-cat-badge">Custo-benefício ★3.0</span>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar" style="background:#EEEDFE;color:#3C3489">LP</div>
+            <div><div class="reviewer-name">Lucas P.</div><div class="review-date">Fevereiro 2025 · Morou 24 meses</div></div>
+            <div style="margin-left:auto;text-align:right"><div style="color:#F59E0B;font-size:14px">★★★★★</div><div style="font-size:15px;font-weight:700">4.7</div></div>
+          </div>
+          <div class="review-prop">🛋️ Studio Rio Branco, NH · Metro Aluguéis</div>
+          <p class="review-text">Morei 2 anos neste studio e a experiência foi excelente. O apartamento é muito bem localizado, perto de tudo. A imobiliária sempre foi solícita. Saí sem nenhum problema, depósito devolvido em 15 dias.</p>
+          <div class="review-cats">
+            <span class="review-cat-badge">Imobiliária ★4.8</span>
+            <span class="review-cat-badge">Imóvel ★4.5</span>
+            <span class="review-cat-badge">Proprietário ★4.9</span>
+            <span class="review-cat-badge">Localização ★5.0</span>
+            <span class="review-cat-badge">Manutenção ★4.5</span>
+            <span class="review-cat-badge">Custo-benefício ★4.5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div id="page-perfil" class="page">
+      <div class="profile-card">
+        <div class="profile-avatar">AO</div>
+        <div>
+          <div class="profile-name">Ana Oliveira</div>
+          <div class="profile-meta">Membro desde Junho 2024 · Novo Hamburgo, RS</div>
+          <div class="profile-badge">🏅 Avaliador destaque</div>
+        </div>
+      </div>
+
+      <div class="metrics" style="margin-bottom:20px">
+        <div class="metric"><div class="metric-label">Avaliações feitas</div><div class="metric-value">7</div><div class="metric-sub">Contribuições</div></div>
+        <div class="metric"><div class="metric-label">Imóveis salvos</div><div class="metric-value">12</div><div class="metric-sub">Favoritos</div></div>
+        <div class="metric"><div class="metric-label">Útil para outros</div><div class="metric-value">148</div><div class="metric-sub">Votos recebidos</div></div>
+      </div>
+
+      <div class="activity-section">
+        <div class="section-head" style="margin-bottom:0"><span class="section-title">Atividade recente</span></div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:#E1F5EE">⭐</div>
+          <div class="activity-text"><div class="activity-title">Avaliou Apto Centro, NH</div><div class="activity-sub">Nota 4.8 · Premier Imóveis</div></div>
+          <div class="activity-time">há 2 dias</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:#FAEEDA">🔖</div>
+          <div class="activity-text"><div class="activity-title">Salvou Casa em Rio Branco</div><div class="activity-sub">R$ 2.100/mês · 3 quartos</div></div>
+          <div class="activity-time">há 5 dias</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:#EEEDFE">💬</div>
+          <div class="activity-text"><div class="activity-title">Respondeu avaliação de Rafael S.</div><div class="activity-sub">Casa Hamburgo Velho</div></div>
+          <div class="activity-time">há 1 sem.</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:#E6F1FB">🏠</div>
+          <div class="activity-text"><div class="activity-title">Avaliou Studio Rio Branco</div><div class="activity-sub">Nota 4.9 · Metro Aluguéis</div></div>
+          <div class="activity-time">há 2 sem.</div>
+        </div>
+      </div>
+
+      <button onclick="openCad()" style="width:100%;padding:13px;border-radius:var(--radius);background:var(--amber-light);color:var(--amber);border:0.5px solid var(--amber);font-family:var(--font-head);font-size:14px;font-weight:700;cursor:pointer">🏅 Programa de avaliadores destaque →</button>
+    </div>
+
+  </main>
+
+  <!-- MOBILE NAV -->
+  <nav class="mob-nav">
+    <button class="mob-nav-btn active" onclick="showPage('busca',this)"><span class="mob-nav-icon">🔍</span>Buscar</button>
+    <button class="mob-nav-btn" onclick="showPage('imobs',this)"><span class="mob-nav-icon">🏢</span>Imobiliárias</button>
+    <button class="mob-nav-btn" onclick="showPage('avaliacoes',this)"><span class="mob-nav-icon">⭐</span>Avaliações</button>
+    <button class="mob-nav-btn" onclick="showPage('perfil',this)"><span class="mob-nav-icon">👤</span>Conta</button>
+  </nav>
+
+  <!-- MODAL IMÓVEL -->
+  <div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- CADASTRO MODAL -->
+  <div class="cad-overlay" id="cad-modal" onclick="handleCadOverlayClick(event)">
+    <div class="cad-modal">
+      <div class="cad-title">Criar conta</div>
+      <div class="cad-sub">Escolha como você vai usar a plataforma</div>
+      <div class="cad-type">
+        <div class="cad-type-btn" onclick="selectCadType(this)">
+          <span class="icon">🏠</span>
+          <div class="label">Inquilino</div>
+          <div class="sub">Buscar imóveis e avaliar</div>
+        </div>
+        <div class="cad-type-btn" onclick="selectCadType(this)">
+          <span class="icon">🏢</span>
+          <div class="label">Imobiliária</div>
+          <div class="sub">Anunciar imóveis</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" type="text" placeholder="Seu nome" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" type="email" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" placeholder="Mínimo 8 caracteres" />
+      </div>
+      <button class="cad-submit" onclick="showToast('Conta criada! Bem-vindo ao ImovAval 🎉');closeCad()">Criar conta</button>
+      <button class="cad-cancel" onclick="closeCad()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const modals = {
+      apto1: `
+        <div class="modal-header"><div><div class="modal-title">Apartamento Centro</div><div class="modal-addr">Rua XV de Novembro, 340, Apto 82 · Novo Hamburgo</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🏢</div>
+        <div class="modal-price">R$ 1.800<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Quartos</div><div class="modal-info-val">2</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">65m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Andar</div><div class="modal-info-val">8º com elevador</div></div>
+          <div class="modal-info"><div class="modal-info-label">Condomínio</div><div class="modal-info-val">R$ 280/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">IPTU</div><div class="modal-info-val">R$ 90/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Fiador</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🏦</div><div><div style="font-weight:700;font-size:15px">Premier Imóveis</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Verificada · Nota 4.7 · 189 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★★ 4.8</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 23 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`,
+      casa1: `
+        <div class="modal-header"><div><div class="modal-title">Casa Hamburgo Velho</div><div class="modal-addr">Rua Independência, 1200 · Hamburgo Velho, NH</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🏠</div>
+        <div class="modal-price">R$ 2.400<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Quartos</div><div class="modal-info-val">3</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">120m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garagem</div><div class="modal-info-val">2 vagas</div></div>
+          <div class="modal-info"><div class="modal-info-label">Quintal</div><div class="modal-info-val">Sim, 80m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">IPTU</div><div class="modal-info-val">R$ 140/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Seguro fiança</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🏡</div><div><div style="font-weight:700;font-size:15px">Lar Ideal</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Verificada · Nota 4.3 · 74 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★☆ 4.2</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 11 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`,
+      studio1: `
+        <div class="modal-header"><div><div class="modal-title">Studio Rio Branco</div><div class="modal-addr">Av. Rio Branco, 765, Studio 14 · NH</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🛋️</div>
+        <div class="modal-price">R$ 1.200<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Tipo</div><div class="modal-info-val">Studio</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">38m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Mobiliado</div><div class="modal-info-val">Completo</div></div>
+          <div class="modal-info"><div class="modal-info-label">Condomínio</div><div class="modal-info-val">Incluso no aluguel</div></div>
+          <div class="modal-info"><div class="modal-info-label">Internet</div><div class="modal-info-val">Inclusa</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Depósito 1 mês</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🏢</div><div><div style="font-weight:700;font-size:15px">Metro Aluguéis</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Verificada · Nota 4.5 · 98 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★★ 4.9</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 7 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`,
+      cobert1: `
+        <div class="modal-header"><div><div class="modal-title">Cobertura São Leopoldo</div><div class="modal-addr">Rua Independência, 890, Cobertura · São Leopoldo</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🏙️</div>
+        <div class="modal-price">R$ 4.500<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Quartos</div><div class="modal-info-val">3 suítes</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">180m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Piscina</div><div class="modal-info-val">Privativa</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garagem</div><div class="modal-info-val">3 vagas</div></div>
+          <div class="modal-info"><div class="modal-info-label">Condomínio</div><div class="modal-info-val">R$ 800/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Fiador ou seguro</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🏢</div><div><div style="font-weight:700;font-size:15px">Metro Aluguéis</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Verificada · Nota 4.5 · 98 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★★ 4.6</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 5 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`,
+      kit1: `
+        <div class="modal-header"><div><div class="modal-title">Kitnet Canoas</div><div class="modal-addr">Rua Farroupilha, 210, Kit 8 · Canoas, RS</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🛏️</div>
+        <div class="modal-price">R$ 850<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Tipo</div><div class="modal-info-val">Kitnet</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">28m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Condomínio</div><div class="modal-info-val">Incluso</div></div>
+          <div class="modal-info"><div class="modal-info-label">Água</div><div class="modal-info-val">Inclusa</div></div>
+          <div class="modal-info"><div class="modal-info-label">IPTU</div><div class="modal-info-val">R$ 40/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Depósito 2 meses</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🏡</div><div><div style="font-weight:700;font-size:15px">Lar Ideal</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Verificada · Nota 4.3 · 74 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★☆ 3.9</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 14 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`,
+      casa2: `
+        <div class="modal-header"><div><div class="modal-title">Casa com Quintal Sapiranga</div><div class="modal-addr">Rua dos Pinheiros, 88 · Sapiranga, RS</div></div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-emoji">🌿</div>
+        <div class="modal-price">R$ 3.100<span style="font-size:15px;font-weight:400;color:var(--text-muted)">/mês</span></div>
+        <div class="modal-grid">
+          <div class="modal-info"><div class="modal-info-label">Quartos</div><div class="modal-info-val">4</div></div>
+          <div class="modal-info"><div class="modal-info-label">Área</div><div class="modal-info-val">200m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Quintal</div><div class="modal-info-val">300m²</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garagem</div><div class="modal-info-val">2 vagas</div></div>
+          <div class="modal-info"><div class="modal-info-label">IPTU</div><div class="modal-info-val">R$ 180/mês</div></div>
+          <div class="modal-info"><div class="modal-info-label">Garantia</div><div class="modal-info-val">Fiador</div></div>
+        </div>
+        <div class="modal-imob"><div style="font-size:28px">🌿</div><div><div style="font-weight:700;font-size:15px">Verde & Lar</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Nota 4.1 · 29 avaliações</div></div></div>
+        <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Avaliação dos moradores</div><div style="color:#F59E0B;font-size:16px;margin-bottom:3px">★★★★★ 4.7</div><div style="font-size:12px;color:var(--text-muted)">Baseado em 9 avaliações de ex-inquilinos</div></div>
+        <button class="modal-contact-btn">Entrar em contato com a imobiliária</button>
+        <button class="modal-review-btn" onclick="closeModal();showPage('avaliacoes',null)">Já morei aqui — avaliar este imóvel</button>`
+    };
+
+    function showPage(id, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab, .mob-nav-btn').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    function toggleChip(el) { el.classList.toggle('sel'); }
+
+    function setStars(group, n) {
+      const container = document.getElementById('stars-' + group);
+      if (!container) return;
+      container.querySelectorAll('button').forEach((b, i) => b.classList.toggle('lit', i < n));
+    }
+
+    function openModal(id) {
+      document.getElementById('modal-content').innerHTML = modals[id] || '';
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+    function handleOverlayClick(e) { if (e.target.id === 'modal') closeModal(); }
+
+    function openCad() { document.getElementById('cad-modal').classList.add('open'); }
+    function closeCad() { document.getElementById('cad-modal').classList.remove('open'); }
+    function handleCadOverlayClick(e) { if (e.target.id === 'cad-modal') closeCad(); }
+
+    function selectCadType(el) {
+      document.querySelectorAll('.cad-type-btn').forEach(b => b.classList.remove('sel'));
+      el.classList.add('sel');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg || '✓ Avaliação publicada com sucesso!';
+      t.style.display = 'block';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.style.display = 'none', 3500);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeModal(); closeCad(); }
+    });
+  </script>
+</body>
+</html>
