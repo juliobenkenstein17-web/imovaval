@@ -220,6 +220,23 @@
             <div class="fg"><label>Nome da imobiliária</label><input type="text" id="n-imob" placeholder="Ex: Premier Imóveis" /></div>
             <div class="fg full"><label>Comodidades (separadas por vírgula)</label><input type="text" id="n-comodidades" placeholder="Ex: Pet friendly, Piscina, Academia, Mobiliado" /></div>
             <div class="fg full"><label>Descrição do imóvel</label><textarea id="n-desc" placeholder="Descreva o imóvel com detalhes, pontos positivos, localização..."></textarea></div>
+            <div class="fg full">
+              <label>Fotos (conversor Google Drive)</label>
+              <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Cole um link do Google Drive por linha e clique em <strong>Converter</strong>.</div>
+                <textarea id="n-drive-links" placeholder="https://drive.google.com/file/d/XXXXX/view?usp=drive_link&#10;https://drive.google.com/file/d/YYYYY/view?usp=drive_link" style="width:100%;min-height:80px;padding:10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-family:var(--font);font-size:13px;color:var(--text);resize:vertical;outline:none;margin-bottom:10px;display:block"></textarea>
+                <button onclick="converterFotos()" style="padding:8px 16px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🔄 Converter fotos</button>
+                <div id="fotos-resultado" style="display:none;margin-top:12px">
+                  <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px">Links convertidos:</div>
+                  <div id="fotos-links-convertidos" style="background:var(--gl);border:0.5px solid var(--green);border-radius:var(--radius);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--gd);word-break:break-all;margin-bottom:8px"></div>
+                  <div style="display:flex;gap:8px">
+                    <button onclick="copiarFotos()" style="padding:7px 14px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer">📋 Copiar</button>
+                    <button onclick="usarNoForm()" style="padding:7px 14px;background:transparent;color:var(--green);border:0.5px solid var(--green);border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer">✓ Usar no anúncio</button>
+                  </div>
+                </div>
+              </div>
+              <input type="text" id="n-foto" placeholder="Links das fotos (gerado acima ou cole manualmente separado por ;)" style="margin-top:8px;width:100%;padding:10px 13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);font-family:var(--font);font-size:13px;color:var(--text);outline:none" />
+            </div>
           </div>
           <div class="form-actions">
             <button class="btn-ghost" onclick="limparForm()">Limpar</button>
@@ -402,7 +419,8 @@ function gerarLinha() {
     document.getElementById('n-comodidades').value || '',
     document.getElementById('n-desc').value || '',
     document.getElementById('n-imob').value || 'Minha Imobiliária',
-    'ativo', '', '', ''
+    'ativo', '', '',
+    document.getElementById('n-foto') ? document.getElementById('n-foto').value || '' : ''
   ];
   const linha = campos.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   document.getElementById('linha-csv').textContent = linha;
@@ -419,7 +437,7 @@ function copiarLinha() {
 }
 
 function limparForm() {
-  ['n-titulo','n-preco','n-area','n-endereco','n-bairro','n-quartos','n-banheiros','n-garagem','n-imob','n-comodidades','n-desc']
+  ['n-titulo','n-preco','n-area','n-endereco','n-bairro','n-quartos','n-banheiros','n-garagem','n-imob','n-comodidades','n-desc','n-foto','n-drive-links']
     .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('resultado-linha').style.display='none';
 }
@@ -434,6 +452,37 @@ function sendReply(id) {
   inp.nextSibling && inp.nextSibling.remove && inp.nextSibling.remove();
   inp.remove();
   toast('✓ Resposta publicada!');
+}
+
+// =================== CONVERSOR FOTOS ===================
+function converterFotos() {
+  const raw = document.getElementById('n-drive-links').value.trim();
+  if (!raw) { toast('⚠️ Cole pelo menos um link do Google Drive!'); return; }
+  const links = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const convertidos = links.map(link => {
+    const match = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return 'https://lh3.googleusercontent.com/d/' + match[1];
+    // Se já for lh3, retorna como está
+    if (link.includes('lh3.googleusercontent.com')) return link;
+    return link;
+  });
+  const resultado = convertidos.join(';');
+  document.getElementById('fotos-links-convertidos').textContent = resultado;
+  document.getElementById('fotos-resultado').style.display = 'block';
+  toast('✓ ' + convertidos.length + ' foto(s) convertida(s)!');
+}
+
+function copiarFotos() {
+  const txt = document.getElementById('fotos-links-convertidos').textContent;
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('✓ Links copiados!'))
+    .catch(() => toast('Selecione e copie manualmente'));
+}
+
+function usarNoForm() {
+  const txt = document.getElementById('fotos-links-convertidos').textContent;
+  document.getElementById('n-foto').value = txt;
+  toast('✓ Fotos adicionadas ao anúncio!');
 }
 
 let toastT;
