@@ -91,20 +91,19 @@
     .detalhe-back:hover { color: var(--green); }
     .detalhe-layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
     .detalhe-foto { height: 340px; border-radius: var(--radius-lg); overflow: hidden; position: relative; margin-bottom: 20px; background: var(--bg2); }
-    .detalhe-foto img { width: 100%; height: 100%; object-fit: cover; }
-    .carrossel-wrap { width: 100%; height: 100%; position: relative; }
-    .carrossel-slides { display: flex; width: 100%; height: 100%; transition: transform 0.35s ease; }
-    .carrossel-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .carrossel-slide img { width: 100%; height: 100%; object-fit: cover; }
-    .carrossel-slide .emoji-big { font-size: 80px; }
-    .carr-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.45); color: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-    .carr-btn:hover { background: rgba(0,0,0,0.7); }
+    .carr-wrap { width: 100%; height: 100%; position: relative; overflow: hidden; }
+    .carr-track { display: flex; height: 100%; transition: transform 0.35s ease; will-change: transform; }
+    .carr-slide { min-width: 100%; width: 100%; height: 100%; flex-shrink: 0; }
+    .carr-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .carr-slide .carr-emoji { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .carr-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 10; line-height: 1; }
+    .carr-btn:hover { background: rgba(0,0,0,0.75); }
     .carr-prev { left: 12px; }
     .carr-next { right: 12px; }
-    .carr-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
-    .carr-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.55); cursor: pointer; border: none; transition: background 0.15s; }
+    .carr-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 10; }
+    .carr-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; cursor: pointer; padding: 0; transition: background 0.15s; }
     .carr-dot.active { background: white; }
-    .carr-counter { position: absolute; top: 10px; right: 12px; background: rgba(0,0,0,0.45); color: white; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .carr-counter { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; z-index: 10; }
     .imovel-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 44px; position: relative; overflow: hidden; }
     .imovel-img img { width: 100%; height: 100%; object-fit: cover; }
     .imovel-img .emoji-fallback { font-size: 44px; }
@@ -514,12 +513,22 @@ function abrirDetalhe(idx) {
   const loc   = [im.bairro, im.cidade].filter(Boolean).join(' · ') || im.endereco || '';
   const nota  = parseFloat(im.avaliacao) || 0;
 
-  // Foto
+  // Carrossel de fotos
   const fotoEl = document.getElementById('detalhe-foto');
   fotoEl.style.background = cor;
-  fotoEl.innerHTML = im.foto
-    ? `<img src="${im.foto}" alt="${im.titulo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=\\'font-size:80px\\'>${emoji}</span>'" />`
-    : `<span style="font-size:80px">${emoji}</span>`;
+  const fotos = im.foto ? im.foto.split(';').map(f=>f.trim()).filter(Boolean) : [];
+  window._carrIdx = 0;
+  window._carrTotal = fotos.length;
+  if (fotos.length === 0) {
+    fotoEl.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px">'+emoji+'</div>';
+  } else if (fotos.length === 1) {
+    fotoEl.innerHTML = '<img src="'+fotos[0]+'" alt="'+im.titulo+'" style="width:100%;height:100%;object-fit:cover;display:block" />';
+  } else {
+    var slides = fotos.map(function(f,i){ return '<div class="carr-slide"><img src="'+f+'" alt="Foto '+(i+1)+'" /></div>'; }).join('');
+    var dots = fotos.map(function(_,i){ return '<button class="carr-dot '+(i===0?'active':'')+'" onclick="irSlide('+i+')"></button>'; }).join('');
+    fotoEl.innerHTML = '<div class="carr-wrap"><div class="carr-track" id="carr-track">'+slides+'</div><button class="carr-btn carr-prev" onclick="moverSlide(-1)">&#8249;</button><button class="carr-btn carr-next" onclick="moverSlide(1)">&#8250;</button><div class="carr-dots" id="carr-dots">'+dots+'</div><div class="carr-counter" id="carr-counter">1 / '+fotos.length+'</div></div>';
+  }
+
 
   document.getElementById('detalhe-titulo').textContent = im.titulo || im.tipo || 'Imóvel';
   document.getElementById('detalhe-addr').textContent   = [im.endereco, loc].filter(Boolean).join(' · ');
@@ -670,17 +679,17 @@ function toast(msg) {
 // =================== CARROSSEL ===================
 function moverSlide(dir) {
   const total = window._carrTotal || 1;
-  window._currSlide = (window._currSlide + dir + total) % total;
-  irSlide(window._currSlide);
+  window._carrIdx = ((window._carrIdx || 0) + dir + total) % total;
+  irSlide(window._carrIdx);
 }
 
 function irSlide(idx) {
-  window._currSlide = idx;
-  const slides = document.getElementById('carr-slides');
-  const dots   = document.getElementById('carr-dots');
+  window._carrIdx = idx;
+  const track   = document.getElementById('carr-track');
+  const dots    = document.getElementById('carr-dots');
   const counter = document.getElementById('carr-counter');
-  if (slides) slides.style.transform = `translateX(-${idx * 100}%)`;
-  if (dots) dots.querySelectorAll('.carr-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  if (track)   track.style.transform = `translateX(-${idx * 100}%)`;
+  if (dots)    dots.querySelectorAll('.carr-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
   if (counter) counter.textContent = `${idx+1} / ${window._carrTotal}`;
 }
 
