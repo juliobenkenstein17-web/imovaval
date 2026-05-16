@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImovAval — Painel da Imobiliária</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #1D9E75; --gl: #E1F5EE; --gd: #085041;
+      --amber: #BA7517; --aml: #FAEEDA;
+      --red: #A32D2D; --rdl: #FCEBEB;
+      --text: #1a1a18; --muted: #6b6b67;
+      --bg: #ffffff; --bg2: #f7f6f2; --bg3: #f0efe9;
+      --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.18);
+      --radius: 10px; --radius-lg: 14px;
+      --font-head: 'Sora', sans-serif; --font: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--font); background: var(--bg3); color: var(--text); min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: var(--bg); border-right: 0.5px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 10; }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 0.5px solid var(--border); margin-bottom: 16px; }
+    .logo-row { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 34px; height: 34px; background: var(--green); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+    .logo-name { font-family: var(--font-head); font-size: 16px; font-weight: 700; color: var(--green); }
+    .verified-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; background: var(--gl); color: var(--gd); padding: 2px 9px; border-radius: 20px; font-weight: 600; margin-top: 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; }
+    .nav-item:hover { color: var(--text); background: var(--bg2); }
+    .nav-item.active { color: var(--green); border-left-color: var(--green); background: var(--gl); }
+    .main { margin-left: 220px; flex: 1; }
+    .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 32px; height: 58px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+    .topbar-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; }
+    .btn-primary { padding: 8px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-ghost { padding: 8px 16px; background: transparent; color: var(--muted); border: 0.5px solid var(--border2); border-radius: var(--radius); font-family: var(--font); font-size: 13px; cursor: pointer; }
+    .content { padding: 28px 32px; }
+    .page { display: none; } .page.active { display: block; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .metric { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
+    .metric-icon { font-size: 20px; margin-bottom: 10px; }
+    .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+    .metric-value { font-family: var(--font-head); font-size: 26px; font-weight: 700; }
+    .metric-sub { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 600; }
+    .table-wrap { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); padding: 10px 14px; border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.4px; background: var(--bg2); }
+    td { padding: 12px 14px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg2); }
+    .pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-block; }
+    .pill-green { background: var(--gl); color: var(--gd); }
+    .pill-amber { background: var(--aml); color: var(--amber); }
+    .pill-gray { background: #F1EFE8; color: #5F5E5A; border: 0.5px solid var(--border); }
+    .form-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 24px; }
+    .form-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .fg { display: flex; flex-direction: column; gap: 6px; }
+    .fg.full { grid-column: 1 / -1; }
+    .fg label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .fg input, .fg select, .fg textarea { padding: 10px 13px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 14px; color: var(--text); outline: none; width: 100%; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--green); background: var(--bg); }
+    .fg textarea { min-height: 90px; resize: vertical; }
+    .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ck { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 9px 12px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg2); transition: all 0.15s; user-select: none; }
+    .ck input { width: 15px; height: 15px; accent-color: var(--green); }
+    .ck.sel { background: var(--gl); border-color: var(--green); color: var(--gd); font-weight: 500; }
+    .step-bar { display: flex; margin-bottom: 28px; border-radius: var(--radius); overflow: hidden; border: 0.5px solid var(--border); }
+    .step { flex: 1; padding: 10px 8px; font-size: 12px; font-weight: 600; color: var(--muted); background: var(--bg2); text-align: center; border-right: 0.5px solid var(--border); }
+    .step:last-child { border-right: none; }
+    .step.done { background: var(--gl); color: var(--gd); }
+    .step.active { background: var(--green); color: white; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 0.5px solid var(--border); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; }
+    .card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 14px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .bar-label { width: 120px; color: var(--muted); font-size: 12px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+    .bar-val { width: 36px; text-align: right; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+    .notif-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+    .notif-item:last-child { border-bottom: none; }
+    .ndot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-top: 5px; flex-shrink: 0; }
+    .ndot.am { background: var(--amber); }
+    .ndot.gr { background: #B4B2A9; }
+    .review-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 12px; }
+    .rv-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .rv-reply-input { width: 100%; padding: 9px 12px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 13px; color: var(--text); outline: none; margin-bottom: 8px; }
+    .rv-reply-btn { padding: 7px 16px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .planilha-csv { background: var(--gl); border: 0.5px solid var(--green); border-radius: var(--radius); padding: 14px 16px; font-family: monospace; font-size: 12px; color: var(--gd); word-break: break-all; white-space: pre-wrap; margin-top: 14px; }
+    .info-box { background: var(--gl); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--gd); margin-top: 16px; }
+    .info-box code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .loading-box { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .loading-spin { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast { display: none; position: fixed; bottom: 28px; right: 28px; background: var(--gd); color: white; padding: 13px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600; z-index: 999; }
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .sec-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+    @media (max-width: 900px) {
+      .sidebar { display: none; } .main { margin-left: 0; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .grid2 { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .checkbox-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-row">
+        <div class="logo-icon">🏦</div>
+        <div class="logo-name">ImovAval</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Painel da Imobiliária</div>
+      <div class="verified-badge">✓ Parceira</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showPage('dashboard',this)"><span style="font-size:16px;width:20px;text-align:center">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showPage('imoveis',this)"><span style="font-size:16px;width:20px;text-align:center">🏠</span> Meus imóveis</div>
+      <div class="nav-item" onclick="showPage('novo',this)"><span style="font-size:16px;width:20px;text-align:center">➕</span> Novo anúncio</div>
+      <div class="nav-item" onclick="showPage('avaliacoes',this)"><span style="font-size:16px;width:20px;text-align:center">⭐</span> Avaliações</div>
+      <div class="nav-item" onclick="showPage('desempenho',this)"><span style="font-size:16px;width:20px;text-align:center">📈</span> Desempenho</div>
+    </nav>
+    <div style="margin-top:auto;padding:16px 20px;border-top:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gd)">JB</div>
+        <div><div style="font-size:13px;font-weight:500">Julio B.</div><div style="font-size:11px;color:var(--muted)">Administrador</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-ghost" onclick="carregarImoveis()">↻ Atualizar</button>
+        <button class="btn-ghost" onclick="window.open('index.html','_blank')">Ver site ↗</button>
+        <button class="btn-primary" onclick="showPage('novo',null)">+ Novo anúncio</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="metrics">
+          <div class="metric"><div class="metric-icon">🏠</div><div class="metric-label">Imóveis ativos</div><div class="metric-value" id="dash-total">—</div><div class="metric-sub">Na planilha</div></div>
+          <div class="metric"><div class="metric-icon">📋</div><div class="metric-label">Tipos diferentes</div><div class="metric-value" id="dash-tipos-n">—</div><div class="metric-sub">Cadastrados</div></div>
+          <div class="metric"><div class="metric-icon">🏙️</div><div class="metric-label">Bairros/cidades</div><div class="metric-value" id="dash-bairros">—</div><div class="metric-sub">Cobertura</div></div>
+          <div class="metric"><div class="metric-icon">⭐</div><div class="metric-label">Avaliações</div><div class="metric-value">189</div><div class="metric-sub">Na plataforma</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Imóveis por tipo</div>
+            <div id="dash-por-tipo"><div class="loading-box"><div class="loading-spin"></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Próximos passos</div>
+            <div class="notif-item"><div class="ndot"></div><div>Planilha conectada e carregando ✓</div></div>
+            <div class="notif-item"><div class="ndot am"></div><div>Adicione mais imóveis na planilha para aparecerem no site</div></div>
+            <div class="notif-item"><div class="ndot gr"></div><div>Compartilhe o link do site com clientes</div></div>
+            <div class="notif-item"><div class="ndot gr"></div><div>Responda avaliações dos inquilinos</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-title">Como adicionar imóveis</div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7">
+            Acesse sua <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTIMPmJXnIl-zc-HVtFSgOAc6n7GguXaSObW83bEQN0QyJ22E-oTGCWg7Dtd5jaY3vdPQWUPuA-5bIS/pub?gid=210326485&single=true&output=csv" target="_blank" style="color:var(--green);font-weight:600">planilha Google Sheets</a> e adicione uma nova linha com os dados do imóvel. As colunas são: <strong>id, titulo, tipo, preco, endereco, bairro, area, quartos, banheiros, garagem, comodidades, descricao, imobiliaria, status, avaliacao, total_avaliacoes, cor_fundo</strong>.<br><br>
+            Use a aba <strong>"Novo anúncio"</strong> para gerar a linha formatada automaticamente e copiar para a planilha.
+          </p>
+        </div>
+      </div>
+
+      <!-- MEUS IMÓVEIS -->
+      <div id="page-imoveis" class="page">
+        <div class="sec-head">
+          <span class="sec-title">Imóveis na planilha</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn-ghost" onclick="carregarImoveis()">↻ Atualizar</button>
+            <button class="btn-primary" onclick="showPage('novo',null)">+ Novo anúncio</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Imóvel</th><th>Tipo</th><th>Valor/mês</th><th>Bairro</th><th>Status</th><th>Avaliação</th></tr></thead>
+            <tbody id="tabela-imoveis">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px"><div class="loading-spin"></div><br>Carregando da planilha...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-box">
+          <strong>💡 Para editar:</strong> Acesse diretamente sua planilha Google Sheets. As alterações aparecem no site automaticamente após alguns segundos. Use a coluna <code>status</code> com valor <code>inativo</code> para ocultar um imóvel do site.
+        </div>
+      </div>
+
+      <!-- NOVO ANÚNCIO -->
+      <div id="page-novo" class="page">
+        <div class="info-box" style="margin-bottom:20px">
+          <strong>📋 Como funciona:</strong> Preencha o formulário e clique em "Gerar linha". Copie o texto gerado e cole na próxima linha vazia da sua planilha Google Sheets. O imóvel aparecerá automaticamente no site.
+        </div>
+        <div class="step-bar">
+          <div class="step done">✓ Planilha conectada</div>
+          <div class="step active">2. Preencher dados</div>
+          <div class="step" id="step3">3. Copiar para planilha</div>
+        </div>
+        <div class="form-card">
+          <div class="form-title">Dados do imóvel</div>
+          <div class="form-grid">
+            <div class="fg"><label>Título do anúncio</label><input type="text" id="n-titulo" placeholder="Ex: Apartamento Centro com Vista" /></div>
+            <div class="fg"><label>Tipo de imóvel</label><select id="n-tipo"><option>Apartamento</option><option>Casa</option><option>Studio</option><option>Kitnet</option><option>Cobertura</option></select></div>
+            <div class="fg"><label>Valor do aluguel (R$)</label><input type="number" id="n-preco" placeholder="Ex: 1800" /></div>
+            <div class="fg"><label>Área útil (m²)</label><input type="number" id="n-area" placeholder="Ex: 65" /></div>
+            <div class="fg"><label>Endereço completo</label><input type="text" id="n-endereco" placeholder="Rua, número, apartamento" /></div>
+            <div class="fg"><label>Bairro e cidade</label><input type="text" id="n-bairro" placeholder="Ex: Centro, Novo Hamburgo" /></div>
+            <div class="fg"><label>Quartos</label><input type="number" id="n-quartos" placeholder="Ex: 2" min="0" /></div>
+            <div class="fg"><label>Banheiros</label><input type="number" id="n-banheiros" placeholder="Ex: 1" min="0" /></div>
+            <div class="fg"><label>Vagas de garagem</label><input type="number" id="n-garagem" placeholder="0 se não tiver" min="0" /></div>
+            <div class="fg"><label>Nome da imobiliária</label><input type="text" id="n-imob" placeholder="Ex: Premier Imóveis" /></div>
+            <div class="fg full"><label>Comodidades (separadas por vírgula)</label><input type="text" id="n-comodidades" placeholder="Ex: Pet friendly, Piscina, Academia, Mobiliado" /></div>
+            <div class="fg full"><label>Descrição do imóvel</label><textarea id="n-desc" placeholder="Descreva o imóvel com detalhes, pontos positivos, localização..."></textarea></div>
+            <div class="fg full">
+              <label>Fotos (conversor Google Drive)</label>
+              <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Cole um link do Google Drive por linha e clique em <strong>Converter</strong>.</div>
+                <textarea id="n-drive-links" placeholder="https://drive.google.com/file/d/XXXXX/view?usp=drive_link&#10;https://drive.google.com/file/d/YYYYY/view?usp=drive_link" style="width:100%;min-height:80px;padding:10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-family:var(--font);font-size:13px;color:var(--text);resize:vertical;outline:none;margin-bottom:10px;display:block"></textarea>
+                <button onclick="converterFotos()" style="padding:8px 16px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🔄 Converter fotos</button>
+                <div id="fotos-resultado" style="display:none;margin-top:12px">
+                  <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px">Links convertidos:</div>
+                  <div id="fotos-links-convertidos" style="background:var(--gl);border:0.5px solid var(--green);border-radius:var(--radius);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--gd);word-break:break-all;margin-bottom:8px"></div>
+                  <div style="display:flex;gap:8px">
+                    <button onclick="copiarFotos()" style="padding:7px 14px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer">📋 Copiar</button>
+                    <button onclick="usarNoForm()" style="padding:7px 14px;background:transparent;color:var(--green);border:0.5px solid var(--green);border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer">✓ Usar no anúncio</button>
+                  </div>
+                </div>
+              </div>
+              <input type="text" id="n-foto" placeholder="Links das fotos (gerado acima ou cole manualmente separado por ;)" style="margin-top:8px;width:100%;padding:10px 13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);font-family:var(--font);font-size:13px;color:var(--text);outline:none" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-ghost" onclick="limparForm()">Limpar</button>
+            <button class="btn-primary" onclick="gerarLinha()">Gerar linha para planilha →</button>
+          </div>
+        </div>
+        <div class="form-card" id="resultado-linha" style="display:none">
+          <div class="form-title" style="color:var(--green)">✓ Linha gerada! Copie e cole na planilha:</div>
+          <div class="planilha-csv" id="linha-csv"></div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn-primary" onclick="copiarLinha()">📋 Copiar linha</button>
+            <a href="https://sheets.google.com" target="_blank"><button class="btn-ghost">Abrir planilha ↗</button></a>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-top:12px">Cole na próxima linha vazia. O imóvel já terá status <strong>ativo</strong> e aparecerá no site automaticamente.</p>
+        </div>
+      </div>
+
+      <!-- AVALIAÇÕES -->
+      <div id="page-avaliacoes" class="page">
+        <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric"><div class="metric-icon">⭐</div><div class="metric-label">Nota geral</div><div class="metric-value" style="color:var(--green)">4.7</div><div class="metric-sub">189 avaliações</div></div>
+          <div class="metric"><div class="metric-icon">✅</div><div class="metric-label">Respondidas</div><div class="metric-value">142</div><div class="metric-sub">75% do total</div></div>
+          <div class="metric"><div class="metric-icon">⏳</div><div class="metric-label">Pendentes</div><div class="metric-value" style="color:var(--amber)">47</div><div class="metric-sub" style="color:var(--amber)">Aguardam resposta</div></div>
+        </div>
+        <div class="review-card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div class="rv-avatar" style="background:#E1F5EE;color:#085041">MF</div>
+            <div><div style="font-size:14px;font-weight:600">Maria F.</div><div style="font-size:11px;color:var(--muted)">Março 2025 · Morou 18 meses</div></div>
+            <div style="margin-left:auto;color:#F59E0B">★★★★★ <span style="color:var(--text);font-weight:700">4.9</span></div>
+          </div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:12px">Fui muito bem atendida. O imóvel estava em ótimo estado. Devolução do depósito rápida. Recomendo!</p>
+          <div style="background:var(--gl);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--gd)"><strong>Sua resposta:</strong> Obrigado, Maria! Foi um prazer. 🙏</div>
+        </div>
+        <div class="review-card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div class="rv-avatar" style="background:#FAEEDA;color:#633806">RS</div>
+            <div><div style="font-size:14px;font-weight:600">Rafael S.</div><div style="font-size:11px;color:var(--muted)">Janeiro 2025 · Morou 8 meses</div></div>
+            <div style="margin-left:auto;color:#F59E0B">★★★☆☆ <span style="color:var(--text);font-weight:700">3.2</span></div>
+          </div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:12px">Imóvel com problemas não mencionados. Processo de saída burocrático.</p>
+          <input class="rv-reply-input" type="text" placeholder="Escreva uma resposta pública..." id="reply-rs" />
+          <button class="rv-reply-btn" onclick="sendReply('reply-rs')">Responder publicamente</button>
+        </div>
+      </div>
+
+      <!-- DESEMPENHO -->
+      <div id="page-desempenho" class="page">
+        <div class="metrics">
+          <div class="metric"><div class="metric-icon">📊</div><div class="metric-label">Taxa de resposta</div><div class="metric-value">75%</div><div class="metric-sub">Meta: 90%</div></div>
+          <div class="metric"><div class="metric-icon">🏆</div><div class="metric-label">Ranking</div><div class="metric-value">3º</div><div class="metric-sub">↑ subiu 2 posições</div></div>
+          <div class="metric"><div class="metric-icon">🔄</div><div class="metric-label">Conversão</div><div class="metric-value">2.5%</div><div class="metric-sub">Vistas → Contato</div></div>
+          <div class="metric"><div class="metric-icon">📝</div><div class="metric-label">Contratos</div><div class="metric-value">12</div><div class="metric-sub">Esse mês</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Avaliações por categoria</div>
+            <div class="bar-row"><div class="bar-label">Atendimento</div><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div><div class="bar-val">4.7</div></div>
+            <div class="bar-row"><div class="bar-label">Estado do imóvel</div><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div><div class="bar-val">4.4</div></div>
+            <div class="bar-row"><div class="bar-label">Processo de saída</div><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div><div class="bar-val">4.5</div></div>
+            <div class="bar-row"><div class="bar-label">Manutenção</div><div class="bar-track"><div class="bar-fill" style="width:82%"></div></div><div class="bar-val">4.1</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Funil de conversão</div>
+            <div class="bar-row"><div class="bar-label">Visualizações</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">1847</div></div>
+            <div class="bar-row"><div class="bar-label">Contatos</div><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><div class="bar-val">47</div></div>
+            <div class="bar-row"><div class="bar-label">Visitas agendadas</div><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><div class="bar-val">23</div></div>
+            <div class="bar-row"><div class="bar-label">Contratos fechados</div><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><div class="bar-val">12</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Link CSV já configurado diretamente — sem necessidade de configurar nada
+const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIMPmJXnIl-zc-HVtFSgOAc6n7GguXaSObW83bEQN0QyJ22E-oTGCWg7Dtd5jaY3vdPQWUPuA-5bIS/pub?gid=210326485&single=true&output=csv';
+const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+
+const titulos = { dashboard:'Dashboard', imoveis:'Meus imóveis', novo:'Novo anúncio', avaliacoes:'Avaliações', desempenho:'Desempenho' };
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('page-title').textContent = titulos[id]||'';
+  if (el) el.classList.add('active');
+}
+
+function parseLinha(linha) {
+  const r=[]; let cur=''; let inQ=false;
+  for(let c of linha){ if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){r.push(cur);cur='';}else{cur+=c;} }
+  r.push(cur);
+  return r.map(v=>v.replace(/^"|"$/g,'').trim());
+}
+
+async function carregarImoveis() {
+  try {
+    let csv = null;
+    try {
+      const r1 = await fetch(SHEETS_URL);
+      if (r1.ok) { const t = await r1.text(); if (t && t.length > 10) csv = t; }
+    } catch(e) {}
+    if (!csv) {
+      const r2 = await fetch(PROXY_URL + encodeURIComponent(SHEETS_URL));
+      if (!r2.ok) throw new Error('HTTP ' + r2.status);
+      csv = await r2.text();
+    }
+    if (!csv || csv.length < 10) { semDados(); return; }
+    const linhas = csv.trim().split('\n');
+    if (linhas.length < 2) { semDados(); return; }
+    const headers = parseLinha(linhas[0]);
+    const imoveis = linhas.slice(1).map(l => {
+      const vals = parseLinha(l);
+      const o = {};
+      headers.forEach((h,i) => o[h.trim()]=(vals[i]||'').trim());
+      return o;
+    });
+    renderDash(imoveis);
+    renderTabela(imoveis);
+    toast('✓ ' + imoveis.length + ' imóveis carregados da planilha');
+  } catch(e) {
+    document.getElementById('tabela-imoveis').innerHTML=`<tr><td colspan="6" style="text-align:center;color:#A32D2D;padding:24px">⚠️ Erro ao carregar: ${e.message}</td></tr>`;
+    toast('❌ Erro ao carregar planilha');
+  }
+}
+
+function semDados() {
+  document.getElementById('dash-total').textContent='0';
+  document.getElementById('tabela-imoveis').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nenhum imóvel na planilha ainda.<br><small>Use "Novo anúncio" para adicionar o primeiro.</small></td></tr>';
+}
+
+function renderDash(lista) {
+  const ativos = lista.filter(i=>(i.status||'ativo').toLowerCase()==='ativo');
+  document.getElementById('dash-total').textContent = ativos.length;
+  const tipos = [...new Set(ativos.map(i=>i.tipo).filter(Boolean))];
+  document.getElementById('dash-tipos-n').textContent = tipos.length;
+  const bairros = [...new Set(ativos.map(i=>i.bairro).filter(Boolean))];
+  document.getElementById('dash-bairros').textContent = bairros.length;
+  const contagemTipo = {};
+  ativos.forEach(i=>{ const t=i.tipo||'Outros'; contagemTipo[t]=(contagemTipo[t]||0)+1; });
+  const max = Math.max(...Object.values(contagemTipo),1);
+  document.getElementById('dash-por-tipo').innerHTML = Object.entries(contagemTipo).map(([t,n])=>
+    `<div class="bar-row"><div class="bar-label">${t}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%"></div></div><div class="bar-val">${n}</div></div>`
+  ).join('') || '<div style="font-size:13px;color:var(--muted)">Nenhum imóvel ativo.</div>';
+}
+
+function renderTabela(lista) {
+  if (!lista.length) { semDados(); return; }
+  document.getElementById('tabela-imoveis').innerHTML = lista.map(im => {
+    const s=(im.status||'ativo').toLowerCase();
+    const pillClass=s==='ativo'?'pill-green':s==='inativo'?'pill-amber':'pill-gray';
+    const pillLabel=s==='ativo'?'Ativo':s==='inativo'?'Inativo':'Rascunho';
+    const preco=im.preco?'R$ '+Number(im.preco).toLocaleString('pt-BR'):'—';
+    const nota=im.avaliacao?'★ '+im.avaliacao:'—';
+    return `<tr>
+      <td><div style="font-weight:600">${im.titulo||'Sem título'}</div><div style="font-size:11px;color:var(--muted)">${im.endereco||''}</div></td>
+      <td>${im.tipo||'—'}</td><td>${preco}</td><td>${im.bairro||'—'}</td>
+      <td><span class="pill ${pillClass}">${pillLabel}</span></td>
+      <td style="color:#F59E0B">${nota}</td>
+    </tr>`;
+  }).join('');
+}
+
+function gerarLinha() {
+  const id = Date.now();
+  const campos = [
+    id,
+    document.getElementById('n-titulo').value || 'Sem título',
+    document.getElementById('n-tipo').value,
+    document.getElementById('n-preco').value || '0',
+    document.getElementById('n-endereco').value || '',
+    document.getElementById('n-bairro').value || '',
+    document.getElementById('n-area').value || '',
+    document.getElementById('n-quartos').value || '',
+    document.getElementById('n-banheiros').value || '',
+    document.getElementById('n-garagem').value || '0',
+    document.getElementById('n-comodidades').value || '',
+    document.getElementById('n-desc').value || '',
+    document.getElementById('n-imob').value || 'Minha Imobiliária',
+    'ativo', '', '',
+    document.getElementById('n-foto') ? document.getElementById('n-foto').value || '' : ''
+  ];
+  const linha = campos.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  document.getElementById('linha-csv').textContent = linha;
+  document.getElementById('resultado-linha').style.display = 'block';
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('resultado-linha').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copiarLinha() {
+  const txt = document.getElementById('linha-csv').textContent;
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('✓ Linha copiada! Cole na planilha.'))
+    .catch(() => toast('Selecione o texto e copie manualmente (Ctrl+C)'));
+}
+
+function limparForm() {
+  ['n-titulo','n-preco','n-area','n-endereco','n-bairro','n-quartos','n-banheiros','n-garagem','n-imob','n-comodidades','n-desc','n-foto','n-drive-links']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('resultado-linha').style.display='none';
+}
+
+function sendReply(id) {
+  const inp=document.getElementById(id);
+  if(!inp||!inp.value.trim()) return;
+  const div=document.createElement('div');
+  div.style.cssText='background:var(--gl);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--gd)';
+  div.innerHTML='<strong>Sua resposta:</strong> '+inp.value;
+  inp.parentNode.insertBefore(div, inp);
+  inp.nextSibling && inp.nextSibling.remove && inp.nextSibling.remove();
+  inp.remove();
+  toast('✓ Resposta publicada!');
+}
+
+// =================== CONVERSOR FOTOS ===================
+function converterFotos() {
+  const raw = document.getElementById('n-drive-links').value.trim();
+  if (!raw) { toast('⚠️ Cole pelo menos um link do Google Drive!'); return; }
+  const links = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const convertidos = links.map(link => {
+    const match = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return 'https://lh3.googleusercontent.com/d/' + match[1];
+    // Se já for lh3, retorna como está
+    if (link.includes('lh3.googleusercontent.com')) return link;
+    return link;
+  });
+  const resultado = convertidos.join(';');
+  document.getElementById('fotos-links-convertidos').textContent = resultado;
+  document.getElementById('fotos-resultado').style.display = 'block';
+  toast('✓ ' + convertidos.length + ' foto(s) convertida(s)!');
+}
+
+function copiarFotos() {
+  const txt = document.getElementById('fotos-links-convertidos').textContent;
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('✓ Links copiados!'))
+    .catch(() => toast('Selecione e copie manualmente'));
+}
+
+function usarNoForm() {
+  const txt = document.getElementById('fotos-links-convertidos').textContent;
+  document.getElementById('n-foto').value = txt;
+  toast('✓ Fotos adicionadas ao anúncio!');
+}
+
+let toastT;
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',3500);
+}
+
+carregarImoveis();
+</script>
+</body>
+</html>
