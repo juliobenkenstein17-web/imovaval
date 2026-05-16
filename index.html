@@ -90,8 +90,24 @@
     .detalhe-back { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 20px; background: none; border: none; font-family: var(--font); padding: 0; }
     .detalhe-back:hover { color: var(--green); }
     .detalhe-layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
-    .detalhe-foto { height: 340px; border-radius: var(--radius-lg); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 80px; margin-bottom: 20px; }
+    .detalhe-foto { height: 340px; border-radius: var(--radius-lg); overflow: hidden; position: relative; margin-bottom: 20px; background: var(--bg2); }
     .detalhe-foto img { width: 100%; height: 100%; object-fit: cover; }
+    .carrossel-wrap { width: 100%; height: 100%; position: relative; }
+    .carrossel-slides { display: flex; width: 100%; height: 100%; transition: transform 0.35s ease; }
+    .carrossel-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .carrossel-slide img { width: 100%; height: 100%; object-fit: cover; }
+    .carrossel-slide .emoji-big { font-size: 80px; }
+    .carr-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.45); color: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .carr-btn:hover { background: rgba(0,0,0,0.7); }
+    .carr-prev { left: 12px; }
+    .carr-next { right: 12px; }
+    .carr-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .carr-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.55); cursor: pointer; border: none; transition: background 0.15s; }
+    .carr-dot.active { background: white; }
+    .carr-counter { position: absolute; top: 10px; right: 12px; background: rgba(0,0,0,0.45); color: white; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .imovel-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 44px; position: relative; overflow: hidden; }
+    .imovel-img img { width: 100%; height: 100%; object-fit: cover; }
+    .imovel-img .emoji-fallback { font-size: 44px; }
     .detalhe-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px; }
     .detalhe-titulo { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
     .detalhe-addr { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
@@ -649,6 +665,23 @@ function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.display = 'block';
   clearTimeout(toastT); toastT = setTimeout(() => t.style.display='none', 3500);
+}
+
+// =================== CARROSSEL ===================
+function moverSlide(dir) {
+  const total = window._carrTotal || 1;
+  window._currSlide = (window._currSlide + dir + total) % total;
+  irSlide(window._currSlide);
+}
+
+function irSlide(idx) {
+  window._currSlide = idx;
+  const slides = document.getElementById('carr-slides');
+  const dots   = document.getElementById('carr-dots');
+  const counter = document.getElementById('carr-counter');
+  if (slides) slides.style.transform = `translateX(-${idx * 100}%)`;
+  if (dots) dots.querySelectorAll('.carr-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  if (counter) counter.textContent = `${idx+1} / ${window._carrTotal}`;
 }
 
 carregarImoveis();
