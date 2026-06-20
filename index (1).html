@@ -429,6 +429,11 @@ async function carregarImoveis() {
       headers.forEach((h, i) => o[h.trim()] = (vals[i]||'').trim());
       return o;
     }).filter(i => (i.status||'ativo').toLowerCase() === 'ativo');
+
+    // Carrega avaliações para calcular nota média real de cada imóvel
+    await carregarTodasAvaliacoes();
+    aplicarNotasReais();
+
     renderCidades();
     renderImoveis(todosImoveis);
     const imobs = [...new Set(todosImoveis.map(i => i.imobiliaria).filter(Boolean))];
@@ -632,48 +637,61 @@ function voltarHome() {
 
 // =================== AVALIAÇÃO ===================
 // =================== AVALIAÇÕES REAIS (Google Forms) ===================
-async function carregarAvaliacoesDoImovel(imovelId) {
-  const lista = document.getElementById('lista-avaliacoes');
-  lista.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px"><div class="loading-spin" style="width:22px;height:22px;margin-bottom:8px"></div><br>Carregando avaliações...</div>';
+async function carregarTodasAvaliacoes() {
   try {
     let csv = null;
     try { const r = await fetch(AVALIACOES_CSV_URL); if (r.ok) { const t = await r.text(); if (t && t.length > 10) csv = t; } } catch(e) {}
     if (!csv) { const r2 = await fetch(PROXY_URL + encodeURIComponent(AVALIACOES_CSV_URL)); if (r2.ok) csv = await r2.text(); }
-    if (!csv || csv.length < 10) { lista.innerHTML = avSemDados(); return; }
-
+    if (!csv || csv.length < 10) { todasAvaliacoes = []; return; }
     const linhas = csv.trim().split('\n');
-    if (linhas.length < 2) { lista.innerHTML = avSemDados(); return; }
+    if (linhas.length < 2) { todasAvaliacoes = []; return; }
     const headers = parseLinha(linhas[0]);
     todasAvaliacoes = linhas.slice(1).map(l => {
       const vals = parseLinha(l); const o = {};
       headers.forEach((h,i) => o[h.trim()] = (vals[i]||'').trim());
       return o;
     });
-
-    // Filtra pelas do imóvel atual (compara por ID)
-    const doImovel = todasAvaliacoes.filter(a => (a['Imóvel ID']||a['imovel id']||'') === String(imovelId));
-
-    if (!doImovel.length) { lista.innerHTML = avSemDados(); return; }
-
-    lista.innerHTML = doImovel.reverse().map(a => {
-      const nome = a['Nome'] || a['nome'] || 'Anônimo';
-      const periodo = a['Período'] || a['periodo'] || '';
-      const comentario = a['Comenário'] || a['Comentário'] || a['comentario'] || '';
-      const ng = parseFloat(a['Nota geral']||a['nota geral']) || 0;
-      const iniciais = nome.slice(0,2).toUpperCase();
-      const stars = ng ? '★'.repeat(Math.round(ng)) + '☆'.repeat(5-Math.round(ng)) : '';
-      return `<div class="review-card">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div class="rv-avatar" style="background:var(--gl);color:var(--gd)">${iniciais}</div>
-          <div><div style="font-size:13px;font-weight:600">${nome}</div><div style="font-size:11px;color:var(--muted)">${periodo||'Ex-inquilino'}</div></div>
-          ${ng?`<div style="margin-left:auto;color:#F59E0B;font-size:13px">${stars} <span style="color:var(--text);font-weight:700">${ng.toFixed(1)}</span></div>`:''}
-        </div>
-        <p style="font-size:13px;color:var(--muted);line-height:1.65">${comentario||'Sem comentário.'}</p>
-      </div>`;
-    }).join('');
   } catch(e) {
-    lista.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Não foi possível carregar as avaliações agora.</div>';
+    todasAvaliacoes = [];
   }
+}
+
+function aplicarNotasReais() {
+  todosImoveis.forEach((im, idx) => {
+    const id = im.id || ('idx-'+idx);
+    const doImovel = todasAvaliacoes.filter(a => (a['Imóvel ID']||a['imovel id']||'') === String(id));
+    if (doImovel.length > 0) {
+      const soma = doImovel.reduce((acc, a) => acc + (parseFloat(a['Nota geral']||a['nota geral']) || 0), 0);
+      im.avaliacao = (soma / doImovel.length).toFixed(1);
+      im.total_avaliacoes = doImovel.length;
+    }
+  });
+}
+
+function avaliacoesDoImovel(imovelId) {
+  return todasAvaliacoes.filter(a => (a['Imóvel ID']||a['imovel id']||'') === String(imovelId));
+}
+
+function carregarAvaliacoesDoImovel(imovelId) {
+  const lista = document.getElementById('lista-avaliacoes');
+  const doImovel = avaliacoesDoImovel(imovelId);
+  if (!doImovel.length) { lista.innerHTML = avSemDados(); return; }
+  lista.innerHTML = doImovel.slice().reverse().map(a => {
+    const nome = a['Nome'] || a['nome'] || 'Anônimo';
+    const periodo = a['Período'] || a['periodo'] || '';
+    const comentario = a['Comenário'] || a['Comentário'] || a['comentario'] || '';
+    const ng = parseFloat(a['Nota geral']||a['nota geral']) || 0;
+    const iniciais = nome.slice(0,2).toUpperCase();
+    const stars = ng ? '★'.repeat(Math.round(ng)) + '☆'.repeat(5-Math.round(ng)) : '';
+    return `<div class="review-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="rv-avatar" style="background:var(--gl);color:var(--gd)">${iniciais}</div>
+        <div><div style="font-size:13px;font-weight:600">${nome}</div><div style="font-size:11px;color:var(--muted)">${periodo||'Ex-inquilino'}</div></div>
+        ${ng?`<div style="margin-left:auto;color:#F59E0B;font-size:13px">${stars} <span style="color:var(--text);font-weight:700">${ng.toFixed(1)}</span></div>`:''}
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65">${comentario||'Sem comentário.'}</p>
+    </div>`;
+  }).join('');
 }
 
 function avSemDados() {
@@ -729,7 +747,11 @@ async function enviarAvaliacao() {
     document.getElementById('av-fim').value = '';
     ['geral','imob','imovel','prop','local'].forEach(g => setStars(g, 0));
     // Aguarda alguns segundos para o Forms processar e recarrega
-    setTimeout(() => carregarAvaliacoesDoImovel(imovelAtualId), 2500);
+    setTimeout(async () => {
+      await carregarTodasAvaliacoes();
+      aplicarNotasReais();
+      carregarAvaliacoesDoImovel(imovelAtualId);
+    }, 2500);
   } catch(e) {
     toast('⚠️ Erro ao enviar. Tente novamente.');
   }
