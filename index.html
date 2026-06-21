@@ -4,27 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ImovAval — Aluguel com Transparência</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #1D9E75; --gl: #E1F5EE; --gd: #085041;
-      --amber: #BA7517; --aml: #FAEEDA;
+      /* selo (verde oficial) — confiança, verificação */
+      --green: #0F6B4F; --gl: #E7F0EA; --gd: #0A4736;
+      /* ouro do selo — notas, avaliações */
+      --amber: #B07F25; --aml: #F6EEDA;
+      /* terracota — valores, preços (telha/tijolo) */
+      --terra: #BD5430; --terral: #F6E6DD;
       --red: #A32D2D; --rdl: #FCEBEB;
-      --text: #1a1a18; --muted: #6b6b67;
-      --bg: #ffffff; --bg2: #f7f6f2; --bg3: #f0efe9;
-      --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.18);
-      --radius: 10px; --radius-lg: 14px;
-      --font-head: 'Sora', sans-serif; --font: 'DM Sans', sans-serif;
+      /* carvão sobre papel */
+      --text: #221D17; --muted: #6E6457;
+      --bg: #ffffff; --bg2: #FAF6EE; --bg3: #F1E9D8;
+      --border: rgba(34,29,23,0.12); --border2: rgba(34,29,23,0.22);
+      --radius: 8px; --radius-lg: 12px;
+      --font-head: 'Fraunces', serif; --font: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
     }
     body { font-family: var(--font); background: var(--bg3); color: var(--text); min-height: 100vh; }
+
+    /* selo de autenticidade — elemento de assinatura */
+    .selo { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; padding: 4px 11px 4px 9px; border: 1.5px dashed currentColor; border-radius: 999px; transform: rotate(-2deg); background: var(--bg); white-space: nowrap; }
 
     /* NAV */
     .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 50; }
     .topbar-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 60px; }
     .logo { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 9px; text-decoration: none; cursor: pointer; }
-    .logo-icon { width: 30px; height: 30px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    .logo-icon svg { width: 17px; height: 17px; fill: white; }
+    .logo-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 32px; height: 32px; }
     .nav-tabs { display: flex; gap: 2px; background: var(--bg2); border-radius: var(--radius); padding: 3px; }
     .nav-tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); border: none; background: transparent; font-family: var(--font); transition: all 0.15s; }
     .nav-tab.active { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.07); border: 0.5px solid var(--border); }
@@ -71,11 +79,11 @@
     .imovel-img .emoji-fallback { font-size: 44px; }
     .imovel-badge { position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: var(--gl); color: var(--gd); }
     .imovel-body { padding: 14px; }
-    .imovel-price { font-family: var(--font-head); font-size: 19px; font-weight: 700; }
+    .imovel-price { font-family: var(--font-head); font-size: 19px; font-weight: 600; color: var(--terra); }
     .imovel-price span { font-size: 12px; font-weight: 400; color: var(--muted); }
     .imovel-addr { font-size: 12px; color: var(--muted); margin: 3px 0 10px; }
     .imovel-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .imovel-tag { font-size: 11px; background: var(--bg2); color: #5F5E5A; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+    .imovel-tag { font-family: var(--font-mono); font-size: 10.5px; background: var(--bg2); color: var(--muted); padding: 3px 9px; border-radius: 5px; font-weight: 500; letter-spacing: 0.01em; }
     .rating-row { display: flex; align-items: center; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
 
     /* LOADING */
@@ -110,12 +118,12 @@
     .detalhe-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px; }
     .detalhe-titulo { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
     .detalhe-addr { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-    .detalhe-preco { font-family: var(--font-head); font-size: 30px; font-weight: 700; color: var(--green); margin-bottom: 16px; }
+    .detalhe-preco { font-family: var(--font-head); font-size: 30px; font-weight: 600; color: var(--terra); margin-bottom: 16px; }
     .detalhe-preco span { font-size: 15px; font-weight: 400; color: var(--muted); }
     .detalhe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
     .detalhe-info { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; border: 0.5px solid var(--border); }
     .detalhe-info-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-    .detalhe-info-val { font-size: 15px; font-weight: 600; }
+    .detalhe-info-val { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
     .detalhe-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
     .comod-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
     .comod-tag { font-size: 12px; background: var(--gl); color: var(--gd); padding: 5px 12px; border-radius: 20px; font-weight: 500; }
@@ -180,7 +188,12 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="logo" onclick="voltarHome()">
-      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none">
+          <path d="M20 1.5l3.4 2 3.9-.6 2.4 3.3 3.9.9 0.6 3.9 3.3 2.4-1.4 3.7 1.4 3.7-3.3 2.4-.6 3.9-3.9.9-2.4 3.3-3.9-.6-3.4 2-3.4-2-3.9.6-2.4-3.3-3.9-.9-.6-3.9-3.3-2.4 1.4-3.7-1.4-3.7 3.3-2.4.6-3.9 3.9-.9 2.4-3.3 3.9.6 3.4-2z" fill="var(--green)"/>
+          <path d="M13 21l7-6 7 6M15 19.5V27h10v-7.5" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
       ImovAval
     </div>
     <div class="nav-tabs">
@@ -198,7 +211,7 @@
   <!-- BUSCA -->
   <div id="page-busca" class="page active">
     <div class="hero">
-      <div class="hero-badge">✦ Imóveis com avaliações reais</div>
+      <div class="selo" style="color:var(--green);margin-bottom:14px">✓ avaliações verificadas</div>
       <h1 class="hero-title">Encontre seu próximo lar<br>com <span>transparência real</span></h1>
       <p class="hero-sub">Avaliações reais de ex-inquilinos, imobiliárias verificadas e imóveis com histórico completo.</p>
       <div class="search-bar">
@@ -301,7 +314,7 @@
       <!-- SIDEBAR -->
       <div>
         <div class="sidebar-card">
-          <div style="font-size:22px;font-weight:700;font-family:var(--font-head);color:var(--green);margin-bottom:4px" id="sidebar-preco"></div>
+          <div style="font-size:22px;font-weight:600;font-family:var(--font-head);color:var(--terra);margin-bottom:4px" id="sidebar-preco"></div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:16px">por mês</div>
           <div class="imob-box" id="sidebar-imob"></div>
           <a id="btn-wpp" class="btn-wpp" href="#" target="_blank">
@@ -421,7 +434,7 @@ let todosImoveis = [];
 let filtrosAtivos = new Set();
 let cidadeFiltro  = '';
 const emojis = { 'apartamento':'🏢','casa':'🏠','studio':'🛋️','kitnet':'🛏️','cobertura':'🏙️' };
-const cores  = ['#E1F5EE','#FAEEDA','#EEEDFE','#FAECE7','#E6F1FB','#EAF3DE'];
+const cores  = ['#E7F0EA','#F3E6D8','#EFE3E6','#F6E6DD','#E5EAE3','#EDE6D4'];
 
 // =================== CARREGAR PLANILHA ===================
 async function carregarImoveis() {
@@ -772,7 +785,7 @@ async function enviarAvaliacao() {
 
 // =================== IMOBILIÁRIAS ===================
 function renderImobs(lista) {
-  const bg = ['#E1F5EE','#FAEEDA','#FAECE7','#E6F1FB','#EAF3DE'];
+  const bg = ['#E7F0EA','#F3E6D8','#F6E6DD','#E5EAE3','#EDE6D4'];
   document.getElementById('imobs-lista').innerHTML = lista.length
     ? lista.map((nome, i) => {
         const imovelsDela = todosImoveis.filter(im => im.imobiliaria === nome);
@@ -780,10 +793,10 @@ function renderImobs(lista) {
         const wpp = imovelsDela[0]?.whatsapp;
         const wppBtn = wpp ? `<a href="https://wa.me/55${wpp.replace(/\D/g,'')}?text=${encodeURIComponent('Olá! Gostaria de mais informações sobre os imóveis disponíveis.')}" target="_blank" style="font-size:12px;color:#25D366;font-weight:600;text-decoration:none">WhatsApp ↗</a>` : '';
         return `<div class="imob-card">
-          <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:${bg[i%bg.length]}">🏦</div>
+          <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;background:${bg[i%bg.length]}">🏦</div>
           <div style="flex:1">
-            <div style="font-weight:600;font-size:15px">${nome}</div>
-            <div style="font-size:12px;color:var(--muted)">${cidades} · ${imovelsDela.length} imóvel(is)</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:600;font-size:15px;font-family:var(--font-head)">${nome}</span><span class="selo" style="color:var(--green);font-size:10px;padding:2px 8px 2px 7px">✓ verificada</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${cidades} · ${imovelsDela.length} imóvel(is)</div>
           </div>
           <div style="text-align:right">${wppBtn}</div>
         </div>`;
