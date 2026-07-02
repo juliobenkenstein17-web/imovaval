@@ -191,7 +191,7 @@ Campos do imóvel:
 - foto: links separados por ponto e vírgula. Links do Google Drive no formato https://drive.google.com/file/d/ID/view devem ser convertidos para https://lh3.googleusercontent.com/d/ID
 - status: sempre "ativo"
 
-Quando tiver os dados suficientes, responda em JSON com este formato EXATO (não adicione nada fora do JSON):
+Quando tiver os dados suficientes, responda em JSON com este formato EXATO (não adicione nada fora do JSON, não use code fences, não use ```):
 {
   "tipo": "resumo",
   "dados": {
@@ -386,16 +386,23 @@ async function enviar() {
     historico.push({ role: 'assistant', content: reply });
 
     // Tenta parsear como JSON (resumo de imóvel)
+    // Remove possíveis markdown code fences do JSON
+    let replyClean = reply.trim()
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
+
     try {
-      const parsed = JSON.parse(reply.trim());
+      const parsed = JSON.parse(replyClean);
       if (parsed.tipo === 'resumo' && parsed.dados) {
         mostrarResumo(parsed.dados, parsed.msg || 'Aqui está o resumo do imóvel. Confira se está tudo certo:');
         return;
       }
     } catch(e) {}
 
-    // Resposta de texto normal
-    addMsg('agent', reply, false);
+    // Resposta de texto normal — formata quebras de linha
+    addMsg('agent', reply.replace(/\n/g, '<br>'), true);
 
   } catch(e) {
     showTyping(false);
