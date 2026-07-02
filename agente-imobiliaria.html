@@ -385,24 +385,18 @@ async function enviar() {
     const reply = data.content?.[0]?.text || '';
     historico.push({ role: 'assistant', content: reply });
 
-    // Tenta parsear como JSON (resumo de imóvel)
-    // Remove possíveis markdown code fences do JSON
-    let replyClean = reply.trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
-
-    try {
-      const parsed = JSON.parse(replyClean);
-      if (parsed.tipo === 'resumo' && parsed.dados) {
-        mostrarResumo(parsed.dados, parsed.msg || 'Aqui está o resumo do imóvel. Confira se está tudo certo:');
-        return;
-      }
-    } catch(e) {}
-
-    // Resposta de texto normal — formata quebras de linha
-    addMsg('agent', reply.replace(/\n/g, '<br>'), true);
+    // Tenta parsear JSON — remove markdown fences primeiro
+    let clean = reply.trim();
+    clean = clean.replace(/^```[a-z]*
+?/i, '').replace(/```$/i, '').trim();
+    let parsed = null;
+    try { parsed = JSON.parse(clean); } catch(e) {}
+    if (parsed && parsed.tipo === 'resumo' && parsed.dados) {
+      mostrarResumo(parsed.dados, parsed.msg || 'Aqui está o resumo do imóvel. Confira se está tudo certo:');
+      return;
+    }
+    // Texto normal
+    addMsg('agent', reply.split('\n').join('<br>'), true);
 
   } catch(e) {
     showTyping(false);
