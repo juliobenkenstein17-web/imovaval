@@ -387,8 +387,7 @@ async function enviar() {
 
     // Tenta parsear JSON — remove markdown fences primeiro
     let clean = reply.trim();
-    clean = clean.replace(/^```[a-z]*
-?/i, '').replace(/```$/i, '').trim();
+    clean = clean.replace(/^```[a-z]*/i, '').replace(/^```/i, '').replace(/```$/i, '').replace(/^\s+|\s+$/g, '');
     let parsed = null;
     try { parsed = JSON.parse(clean); } catch(e) {}
     if (parsed && parsed.tipo === 'resumo' && parsed.dados) {
