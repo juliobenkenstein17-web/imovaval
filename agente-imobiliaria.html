@@ -1,407 +1,352 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImovAval — Agente de Cadastro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --green: #0F6B4F; --gl: #E7F0EA; --gd: #0A4736;
-      --terra: #BD5430; --terral: #F6E6DD;
-      --amber: #B07F25; --aml: #F6EEDA;
-      --text: #221D17; --muted: #6E6457;
-      --bg: #ffffff; --bg2: #FAF6EE; --bg3: #F1E9D8;
-      --border: rgba(34,29,23,0.12); --border2: rgba(34,29,23,0.22);
-      --radius: 8px; --radius-lg: 12px;
-      --font-head: 'Fraunces', serif; --font: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
-    }
-    body { font-family: var(--font); background: var(--bg3); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImovAval — Agente de Cadastro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#0F6B4F;--gl:#E7F0EA;--gd:#0A4736;
+  --t:#BD5430;--tl:#F6E6DD;
+  --am:#B07F25;--aml:#F6EEDA;
+  --tx:#221D17;--mu:#6E6457;
+  --bg:#fff;--bg2:#FAF6EE;--bg3:#F1E9D8;
+  --bd:rgba(34,29,23,.12);--bd2:rgba(34,29,23,.22);
+  --r:8px;--rl:12px;
+  --fh:'Fraunces',serif;--f:'Inter',sans-serif;
+}
+body{font-family:var(--f);background:var(--bg3);color:var(--tx);min-height:100vh;display:flex;flex-direction:column}
 
-    /* HEADER */
-    .header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0 24px; height: 58px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-    .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--green); text-decoration: none; }
-    .agent-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--gl); color: var(--gd); font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; border: 0.5px dashed var(--green); }
-    .agent-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* HEADER */
+.hdr{background:var(--bg);border-bottom:.5px solid var(--bd);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-size:18px;font-weight:700;color:var(--g);text-decoration:none}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--gl);color:var(--gd);font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;border:.5px dashed var(--g)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--g);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-    /* CHAT LAYOUT */
-    .chat-wrap { flex: 1; display: flex; flex-direction: column; max-width: 780px; margin: 0 auto; width: 100%; padding: 24px 20px 0; }
-    .messages { flex: 1; overflow-y: auto; padding-bottom: 16px; }
-    .msg { display: flex; gap: 10px; margin-bottom: 16px; align-items: flex-start; }
-    .msg.user { flex-direction: row-reverse; }
-    .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
-    .avatar.agent { background: var(--green); color: white; }
-    .avatar.user { background: var(--terra); color: white; font-size: 12px; }
-    .bubble { max-width: 78%; padding: 12px 16px; border-radius: var(--radius-lg); font-size: 14px; line-height: 1.65; }
-    .bubble.agent { background: var(--bg); border: 0.5px solid var(--border); border-bottom-left-radius: 4px; }
-    .bubble.user { background: var(--green); color: white; border-bottom-right-radius: 4px; }
-    .bubble strong { font-weight: 600; }
-    .bubble .tag { display: inline-block; background: var(--gl); color: var(--gd); font-size: 11px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 4px; margin: 2px 2px; }
-    .bubble .tag-terra { background: var(--terral); color: var(--terra); }
-    .bubble .warn { background: var(--aml); color: var(--amber); font-size: 12px; padding: 8px 12px; border-radius: var(--radius); margin-top: 8px; border-left: 3px solid var(--amber); }
+/* CHAT */
+.wrap{flex:1;display:flex;flex-direction:column;max-width:760px;margin:0 auto;width:100%;padding:20px 16px 0}
+.msgs{flex:1;overflow-y:auto;padding-bottom:12px}
+.msg{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.msg.u{flex-direction:row-reverse}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.av.a{background:var(--g);color:#fff}
+.av.u{background:var(--t);color:#fff}
+.bub{max-width:80%;padding:11px 15px;border-radius:var(--rl);font-size:14px;line-height:1.65}
+.bub.a{background:var(--bg);border:.5px solid var(--bd);border-bottom-left-radius:3px}
+.bub.u{background:var(--g);color:#fff;border-bottom-right-radius:3px}
+.tag{display:inline-block;background:var(--gl);color:var(--gd);font-size:11px;padding:2px 8px;border-radius:4px;margin:2px}
+.warn{background:var(--aml);color:var(--am);font-size:12px;padding:8px 12px;border-radius:var(--r);margin-top:8px;border-left:3px solid var(--am)}
 
-    /* CARTÃO DE RESUMO */
-    .card-resumo { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-top: 10px; }
-    .card-resumo-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--green); display: flex; align-items: center; gap: 6px; }
-    .resumo-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 0.5px solid var(--border); }
-    .resumo-row:last-child { border-bottom: none; }
-    .resumo-label { color: var(--muted); }
-    .resumo-val { font-weight: 500; font-family: var(--font-mono); font-size: 11.5px; }
-    .fotos-preview { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-    .foto-thumb { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 0.5px solid var(--border); }
-    .foto-url { background: var(--bg2); border-radius: 6px; border: 0.5px solid var(--border); padding: 4px 8px; font-size: 10px; font-family: var(--font-mono); color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-publicar { width: 100%; padding: 11px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: var(--font-head); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-publicar:hover { background: var(--gd); }
-    .btn-corrigir { width: 100%; padding: 9px; background: transparent; color: var(--terra); border: 0.5px solid var(--terra); border-radius: var(--radius); font-family: var(--font); font-size: 13px; cursor: pointer; margin-top: 6px; }
+/* TYPING */
+.typing{display:none;gap:10px;margin-bottom:14px;align-items:flex-start}
+.typing.on{display:flex}
+.dots{display:flex;gap:4px;padding:13px 15px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);border-bottom-left-radius:3px}
+.d{width:7px;height:7px;border-radius:50%;background:var(--mu);animation:bou 1.2s infinite}
+.d:nth-child(2){animation-delay:.2s}
+.d:nth-child(3){animation-delay:.4s}
+@keyframes bou{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
-    /* LINHA CSV */
-    .csv-box { background: var(--gl); border: 0.5px solid var(--green); border-radius: var(--radius); padding: 10px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--gd); word-break: break-all; margin-top: 10px; }
-    .btn-copy { padding: 6px 14px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-size: 12px; cursor: pointer; margin-top: 8px; font-family: var(--font); }
+/* RESUMO CARD */
+.card{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:14px;margin-top:10px}
+.ctit{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--g);margin-bottom:10px}
+.row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:.5px solid var(--bd)}
+.row:last-of-type{border:none}
+.rl{color:var(--mu)}
+.rv{font-weight:500;font-size:12px;text-align:right;max-width:60%}
+.fotos{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.fotos img{width:58px;height:58px;border-radius:6px;object-fit:cover;border:.5px solid var(--bd)}
+.bpub{width:100%;padding:11px;background:var(--g);color:#fff;border:none;border-radius:var(--r);font-family:var(--fh);font-size:14px;font-weight:600;cursor:pointer;margin-top:12px}
+.bpub:hover{background:var(--gd)}
+.bcor{width:100%;padding:9px;background:transparent;color:var(--t);border:.5px solid var(--t);border-radius:var(--r);font-family:var(--f);font-size:13px;cursor:pointer;margin-top:6px}
+.csv{background:var(--gl);border:.5px solid var(--g);border-radius:var(--r);padding:10px;font-family:monospace;font-size:11px;color:var(--gd);word-break:break-all;margin-top:10px}
+.bcop{padding:7px 14px;background:var(--g);color:#fff;border:none;border-radius:var(--r);font-size:12px;cursor:pointer;margin-top:8px;font-family:var(--f)}
+.bnov{padding:7px 14px;background:transparent;color:var(--g);border:.5px solid var(--g);border-radius:var(--r);font-size:12px;cursor:pointer;font-family:var(--f)}
 
-    /* TYPING INDICATOR */
-    .typing { display: none; }
-    .typing.show { display: flex; }
-    .typing-dots { display: flex; gap: 4px; padding: 14px 16px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); border-bottom-left-radius: 4px; }
-    .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+/* CHIPS */
+.chips{display:flex;gap:6px;flex-wrap:wrap;max-width:760px;margin:0 auto 10px;padding:0 16px}
+.chip{padding:5px 12px;border-radius:20px;border:.5px solid var(--bd2);font-size:12px;cursor:pointer;background:var(--bg);color:var(--mu);font-family:var(--f)}
+.chip:hover{border-color:var(--g);color:var(--g);background:var(--gl)}
 
-    /* INPUT */
-    .input-area { background: var(--bg); border-top: 0.5px solid var(--border); padding: 14px 20px; flex-shrink: 0; }
-    .input-row { display: flex; gap: 10px; max-width: 780px; margin: 0 auto; }
-    .input-box { flex: 1; padding: 11px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 14px; color: var(--text); outline: none; resize: none; min-height: 46px; max-height: 120px; line-height: 1.5; }
-    .input-box:focus { border-color: var(--green); background: var(--bg); }
-    .send-btn { width: 46px; height: 46px; background: var(--green); color: white; border: none; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .send-btn:hover { background: var(--gd); }
-    .send-btn svg { width: 18px; height: 18px; }
-    .input-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; max-width: 780px; margin-left: auto; margin-right: auto; }
-
-    /* CHIPS RÁPIDOS */
-    .quick-chips { display: flex; gap: 6px; flex-wrap: wrap; max-width: 780px; margin: 0 auto 10px; }
-    .qchip { padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border2); font-size: 12px; cursor: pointer; background: var(--bg); color: var(--muted); font-family: var(--font); transition: all 0.15s; }
-    .qchip:hover { border-color: var(--green); color: var(--green); background: var(--gl); }
-
-    @media (max-width: 600px) {
-      .chat-wrap { padding: 16px 12px 0; }
-      .bubble { max-width: 88%; }
-    }
-  </style>
+/* INPUT */
+.iarea{background:var(--bg);border-top:.5px solid var(--bd);padding:12px 16px;flex-shrink:0}
+.irow{display:flex;gap:8px;max-width:760px;margin:0 auto}
+textarea.inp{flex:1;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;color:var(--tx);outline:none;resize:none;min-height:44px;max-height:120px;line-height:1.5}
+textarea.inp:focus{border-color:var(--g);background:var(--bg)}
+button.sbtn{width:44px;height:44px;background:var(--g);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+button.sbtn:hover{background:var(--gd)}
+.hint{font-size:11px;color:var(--mu);text-align:center;margin-top:6px;max-width:760px;margin-left:auto;margin-right:auto}
+</style>
 </head>
 <body>
 
-<header class="header">
+<header class="hdr">
   <a href="index.html" class="logo">
-    <svg viewBox="0 0 40 40" width="30" height="30" fill="none">
+    <svg viewBox="0 0 40 40" width="28" height="28" fill="none">
       <polygon points="28,0 40,12 40,40 0,40 0,0" fill="#FAF6EE" stroke="#0F6B4F" stroke-width="1.5" stroke-linejoin="round"/>
       <polygon points="28,0 40,12 28,12" fill="#E7F0EA" stroke="#0F6B4F" stroke-width="1.2" stroke-linejoin="round"/>
-      <line x1="28" y1="0" x2="28" y2="12" stroke="#0F6B4F" stroke-width="0.8"/>
       <path d="M7 29 L20 15 L33 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
       <path d="M10 29 L10 37 L30 37 L30 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
       <rect x="15" y="30" width="10" height="7" rx="0.5" fill="none" stroke="#0F6B4F" stroke-width="1.6"/>
-      <text x="20" y="11" text-anchor="middle" font-size="8" font-weight="700" fill="#BD5430" font-family="serif">✓</text>
+      <text x="20" y="11" text-anchor="middle" font-size="9" fill="#BD5430" font-family="serif">✓</text>
     </svg>
     ImovAval
   </a>
-  <div class="agent-badge"><div class="agent-dot"></div> Agente de Cadastro</div>
+  <div class="badge"><div class="dot"></div> Agente de Cadastro</div>
 </header>
 
-<div class="chat-wrap">
-  <div class="messages" id="messages">
-
-    <!-- Mensagem inicial do agente -->
+<div class="wrap">
+  <div class="msgs" id="msgs">
     <div class="msg">
-      <div class="avatar agent">IA</div>
-      <div class="bubble agent">
+      <div class="av a">IA</div>
+      <div class="bub a">
         Olá! Sou o agente de cadastro do <strong>ImovAval</strong>. 👋<br><br>
-        Me envie as informações do imóvel e eu preparo tudo para publicar no site automaticamente. Pode me passar assim:
+        Me envie as informações do imóvel que eu organizo tudo automaticamente:
         <br><br>
-        <span class="tag">Título</span> <span class="tag">Tipo</span> <span class="tag">Preço</span> <span class="tag">Endereço</span> <span class="tag">Bairro</span> <span class="tag">Cidade</span> <span class="tag">Área</span> <span class="tag">Quartos</span> <span class="tag">Banheiros</span> <span class="tag">Garagem</span> <span class="tag">Comodidades</span> <span class="tag">Imobiliária</span> <span class="tag">WhatsApp</span>
+        <span class="tag">Título</span><span class="tag">Tipo</span><span class="tag">Preço</span><span class="tag">Endereço</span><span class="tag">Bairro</span><span class="tag">Cidade</span><span class="tag">Quartos</span><span class="tag">Área</span><span class="tag">Garagem</span><span class="tag">Comodidades</span><span class="tag">Imobiliária</span><span class="tag">WhatsApp</span>
         <br><br>
-        E se tiver fotos, cole os links do <strong>Google Drive</strong> ou <strong>Imgur</strong> — eu converto automaticamente.
-        <div class="warn">💡 Não precisa ser formal! Pode escrever de qualquer jeito, como uma mensagem de WhatsApp mesmo.</div>
+        Para fotos, cole links do <strong>Google Drive</strong> ou <strong>Imgur</strong>.
+        <div class="warn">💡 Pode escrever informalmente, como uma mensagem de WhatsApp!</div>
       </div>
     </div>
-
   </div>
 
-  <!-- Typing indicator -->
-  <div class="msg typing" id="typing">
-    <div class="avatar agent">IA</div>
-    <div class="typing-dots">
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-    </div>
+  <div class="typing" id="typing">
+    <div class="av a">IA</div>
+    <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
   </div>
 </div>
 
-<!-- Quick chips -->
-<div style="background:var(--bg3);padding:10px 20px 0">
-  <div class="quick-chips" id="chips">
-    <button class="qchip" onclick="enviarChip(this)">📋 Ver exemplo de mensagem</button>
-    <button class="qchip" onclick="enviarChip(this)">📸 Como enviar fotos?</button>
-    <button class="qchip" onclick="enviarChip(this)">❓ Quais dados são obrigatórios?</button>
-    <button class="qchip" onclick="enviarChip(this)">🏠 Cadastrar novo imóvel</button>
+<div style="background:var(--bg3);padding:8px 0 0">
+  <div class="chips">
+    <button class="chip" onclick="usarChip('Me mostre um exemplo de mensagem para cadastrar um imóvel')">📋 Ver exemplo</button>
+    <button class="chip" onclick="usarChip('Como envio fotos do imóvel?')">📸 Como enviar fotos?</button>
+    <button class="chip" onclick="usarChip('Quais dados são obrigatórios?')">❓ Dados obrigatórios</button>
+    <button class="chip" onclick="novoImovel()">🏠 Novo imóvel</button>
   </div>
 </div>
 
-<!-- Input -->
-<div class="input-area">
-  <div class="input-row">
-    <textarea class="input-box" id="input" placeholder="Descreva o imóvel ou cole as informações aqui..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-    <button class="send-btn" onclick="enviar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="iarea">
+  <div class="irow">
+    <textarea class="inp" id="inp" placeholder="Descreva o imóvel aqui..." rows="1"></textarea>
+    <button class="sbtn" id="sbtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
       </svg>
     </button>
   </div>
-  <div class="input-hint">As informações são processadas pela IA e formatadas para a planilha do ImovAval</div>
+  <div class="hint">As informações são processadas pela IA e formatadas para a planilha do ImovAval</div>
 </div>
 
 <script>
-const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
-const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIMPmJXnIl-zc-HVtFSgOAc6n7GguXaSObW83bEQN0QyJ22E-oTGCWg7Dtd5jaY3vdPQWUPuA-5bIS/pub?gid=210326485&single=true&output=csv';
+var CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+var historico = [];
+var dadosAtuais = null;
 
-const SYSTEM_PROMPT = `Você é o agente de cadastro do ImovAval, uma plataforma de aluguel com avaliações verificadas. Sua função é conversar com representantes de imobiliárias em português brasileiro e ajudá-los a cadastrar imóveis no site.
-
-Quando o usuário enviar informações de um imóvel (de qualquer forma, pode ser informal), você deve:
-1. Extrair os dados do texto
-2. Confirmar os dados em formato de cartão
-3. Gerar a linha formatada para a planilha
-
-Campos do imóvel:
-- titulo (obrigatório): nome do anúncio
-- tipo (obrigatório): Apartamento | Casa | Studio | Kitnet | Cobertura
-- preco (obrigatório): só números, sem R$
-- endereco: endereço completo
-- bairro: bairro
-- cidade: cidade
-- area: área em m² (só número)
-- quartos: número de quartos
-- banheiros: número de banheiros  
-- garagem: número de vagas
-- comodidades: separadas por vírgula
-- descricao: descrição livre
-- imobiliaria (obrigatório): nome da imobiliária
-- whatsapp: número com DDD, só números
-- foto: links separados por ponto e vírgula. Links do Google Drive no formato https://drive.google.com/file/d/ID/view devem ser convertidos para https://lh3.googleusercontent.com/d/ID
-- status: sempre "ativo"
-
-Quando tiver os dados suficientes, responda em JSON com este formato EXATO (não adicione nada fora do JSON, não use code fences, não use ```):
-{
-  "tipo": "resumo",
-  "dados": {
-    "titulo": "",
-    "tipo": "",
-    "preco": "",
-    "endereco": "",
-    "bairro": "",
-    "cidade": "",
-    "area": "",
-    "quartos": "",
-    "banheiros": "",
-    "garagem": "",
-    "comodidades": "",
-    "descricao": "",
-    "imobiliaria": "",
-    "whatsapp": "",
-    "foto": "",
-    "status": "ativo"
-  },
-  "msg": "mensagem amigável confirmando os dados"
-}
-
-Se faltar informações obrigatórias ou o usuário fizer perguntas, responda normalmente em texto. Se o usuário pedir exemplo, mostre um exemplo de mensagem informal que ele pode enviar. Seja sempre simpático e conciso.`;
-
-let historico = [];
-let dadosAtuais = null;
+var SYSTEM = 'Você é o agente de cadastro do ImovAval, plataforma de aluguel com avaliações verificadas. Converse em português brasileiro de forma simpática e concisa.\n\nQuando o usuário enviar dados de um imóvel, extraia as informações e responda APENAS com um objeto JSON válido, sem nenhum texto antes ou depois, sem markdown, sem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"mensagem curta confirmando"}\n\nO campo "tipo" pode ser: Apartamento, Casa, Studio, Kitnet ou Cobertura.\nO campo "preco" deve conter apenas números.\nO campo "foto": converta links Google Drive do formato drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID. Links separados por ponto e vírgula.\nSe faltar dados obrigatórios (titulo, tipo, preco, imobiliaria), pergunte em texto normal.\nPara perguntas gerais, responda em texto normal.';
 
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
-}
-
-function enviarChip(btn) {
-  document.getElementById('input').value = btn.textContent.replace(/^[^\s]+ /, '').trim();
-  enviar();
-}
-
-function addMsg(role, html, isHtml=false) {
-  const msgs = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const av = document.createElement('div');
-  av.className = `avatar ${role}`;
-  av.textContent = role === 'agent' ? 'IA' : 'EU';
-  const bub = document.createElement('div');
-  bub.className = `bubble ${role}`;
-  if (isHtml) bub.innerHTML = html;
-  else bub.textContent = html;
-  if (role === 'user') { div.appendChild(bub); div.appendChild(av); }
-  else { div.appendChild(av); div.appendChild(bub); }
+function adicionarMsg(papel, conteudo, isHtml) {
+  var msgs = document.getElementById('msgs');
+  var div = document.createElement('div');
+  div.className = 'msg' + (papel === 'u' ? ' u' : '');
+  var av = document.createElement('div');
+  av.className = 'av ' + papel;
+  av.textContent = papel === 'u' ? 'EU' : 'IA';
+  var bub = document.createElement('div');
+  bub.className = 'bub ' + papel;
+  if (isHtml) {
+    bub.innerHTML = conteudo;
+  } else {
+    bub.textContent = conteudo;
+  }
+  if (papel === 'u') {
+    div.appendChild(bub);
+    div.appendChild(av);
+  } else {
+    div.appendChild(av);
+    div.appendChild(bub);
+  }
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
-  return bub;
 }
 
-function showTyping(show) {
-  document.getElementById('typing').classList.toggle('show', show);
-  const msgs = document.getElementById('messages');
-  msgs.scrollTop = msgs.scrollHeight;
+function mostrarTyping(show) {
+  document.getElementById('typing').className = show ? 'typing on' : 'typing';
+  document.getElementById('msgs').scrollTop = 99999;
 }
 
 function converterFotos(links) {
   if (!links) return '';
-  return links.split(/[\n;,]+/).map(l => {
-    l = l.trim();
-    if (!l) return '';
-    const m = l.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-    if (l.startsWith('http')) return l;
-    return '';
-  }).filter(Boolean).join(';');
+  var partes = links.split(/[;\n,]+/);
+  var resultado = [];
+  for (var i = 0; i < partes.length; i++) {
+    var l = partes[i].trim();
+    if (!l) continue;
+    var m = l.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (m) {
+      resultado.push('https://lh3.googleusercontent.com/d/' + m[1]);
+    } else if (l.indexOf('http') === 0) {
+      resultado.push(l);
+    }
+  }
+  return resultado.join(';');
 }
 
 function gerarCSV(d) {
-  const foto = converterFotos(d.foto || '');
-  const campos = [
-    Date.now(), d.titulo||'', d.tipo||'', d.preco||'', d.endereco||'',
-    d.bairro||'', d.cidade||'', d.area||'', d.quartos||'', d.banheiros||'',
-    d.garagem||'0', d.comodidades||'', d.descricao||'', d.imobiliaria||'',
+  var foto = converterFotos(d.foto || '');
+  var campos = [
+    String(Date.now()), d.titulo||'', d.tipo||'', d.preco||'',
+    d.endereco||'', d.bairro||'', d.cidade||'', d.area||'',
+    d.quartos||'', d.banheiros||'', d.garagem||'0',
+    d.comodidades||'', d.descricao||'', d.imobiliaria||'',
     d.whatsapp||'', d.status||'ativo', '', '', foto
   ];
-  return campos.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  return campos.map(function(v) {
+    return '"' + String(v).replace(/"/g, '""') + '"';
+  }).join(',');
 }
 
 function mostrarResumo(dados, msg) {
   dadosAtuais = dados;
-  const foto = converterFotos(dados.foto || '');
-  const csv = gerarCSV(dados);
+  var foto = converterFotos(dados.foto || '');
+  var preco = dados.preco ? 'R$ ' + Number(dados.preco).toLocaleString('pt-BR') + '/mês' : '—';
 
-  const fotosHtml = foto
-    ? foto.split(';').filter(Boolean).map(f =>
-        `<img class="foto-thumb" src="${f}" onerror="this.style.display='none'" />`
-      ).join('')
-    : '<span style="font-size:12px;color:var(--muted)">Nenhuma foto</span>';
+  var fotosHtml = '';
+  if (foto) {
+    var links = foto.split(';').filter(function(f) { return f; });
+    for (var i = 0; i < links.length; i++) {
+      fotosHtml += '<img src="' + links[i] + '" onerror="this.style.display=\'none\'" />';
+    }
+  } else {
+    fotosHtml = '<span style="font-size:12px;color:var(--mu)">Nenhuma foto</span>';
+  }
 
-  const html = `
-    <p style="margin-bottom:10px">${msg}</p>
-    <div class="card-resumo">
-      <div class="card-resumo-title">📋 Resumo do imóvel</div>
-      ${[
-        ['Título', dados.titulo],
-        ['Tipo', dados.tipo],
-        ['Preço', dados.preco ? 'R$ ' + Number(dados.preco).toLocaleString('pt-BR') + '/mês' : '—'],
-        ['Endereço', dados.endereco],
-        ['Bairro', dados.bairro],
-        ['Cidade', dados.cidade],
-        ['Área', dados.area ? dados.area + 'm²' : '—'],
-        ['Quartos', dados.quartos || '—'],
-        ['Banheiros', dados.banheiros || '—'],
-        ['Garagem', dados.garagem || '0'],
-        ['Comodidades', dados.comodidades || '—'],
-        ['Imobiliária', dados.imobiliaria],
-        ['WhatsApp', dados.whatsapp || '—'],
-      ].map(([l,v]) => `<div class="resumo-row"><span class="resumo-label">${l}</span><span class="resumo-val">${v||'—'}</span></div>`).join('')}
-      <div style="margin-top:10px">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500">FOTOS</div>
-        <div class="fotos-preview">${fotosHtml}</div>
-      </div>
-      <button class="btn-publicar" onclick="publicar()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        Confirmar e copiar para planilha
-      </button>
-      <button class="btn-corrigir" onclick="corrigir()">Corrigir alguma informação</button>
-    </div>`;
+  var campos = [
+    ['Título', dados.titulo], ['Tipo', dados.tipo], ['Preço', preco],
+    ['Endereço', dados.endereco], ['Bairro', dados.bairro], ['Cidade', dados.cidade],
+    ['Área', dados.area ? dados.area + 'm²' : '—'], ['Quartos', dados.quartos || '—'],
+    ['Banheiros', dados.banheiros || '—'], ['Garagem', dados.garagem || '0'],
+    ['Comodidades', dados.comodidades || '—'], ['Imobiliária', dados.imobiliaria],
+    ['WhatsApp', dados.whatsapp || '—']
+  ];
 
-  addMsg('agent', html, true);
+  var rowsHtml = '';
+  for (var j = 0; j < campos.length; j++) {
+    rowsHtml += '<div class="row"><span class="rl">' + campos[j][0] + '</span><span class="rv">' + (campos[j][1] || '—') + '</span></div>';
+  }
+
+  var html = '<p style="margin-bottom:10px">' + msg + '</p>' +
+    '<div class="card">' +
+    '<div class="ctit">📋 Resumo do imóvel</div>' +
+    rowsHtml +
+    '<div style="margin-top:10px"><div style="font-size:11px;color:var(--mu);margin-bottom:6px">FOTOS</div>' +
+    '<div class="fotos">' + fotosHtml + '</div></div>' +
+    '<button class="bpub" onclick="publicar()">✓ Confirmar e copiar para planilha</button>' +
+    '<button class="bcor" onclick="corrigir()">Corrigir alguma informação</button>' +
+    '</div>';
+
+  adicionarMsg('a', html, true);
 }
 
 function publicar() {
   if (!dadosAtuais) return;
-  const csv = gerarCSV(dadosAtuais);
+  var csv = gerarCSV(dadosAtuais);
+  var html = '<p>✅ <strong>Linha copiada!</strong> Cole na próxima linha vazia da planilha.</p>' +
+    '<div class="csv">' + csv + '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' +
+    '<a href="https://sheets.google.com" target="_blank" style="padding:7px 14px;background:var(--g);color:#fff;border-radius:var(--r);font-size:12px;font-weight:500;text-decoration:none">Abrir planilha ↗</a>' +
+    '<button class="bnov" onclick="novoImovel()">Cadastrar outro imóvel</button>' +
+    '</div>';
 
-  navigator.clipboard.writeText(csv).then(() => {
-    const html = `
-      <p>✅ <strong>Linha copiada!</strong> Agora cole na próxima linha vazia da sua planilha Google Sheets.</p>
-      <div class="csv-box">${csv}</div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <a href="https://sheets.google.com" target="_blank" style="padding:7px 14px;background:var(--green);color:white;border-radius:var(--radius);font-size:12px;font-weight:500;text-decoration:none">Abrir planilha ↗</a>
-        <button onclick="novoImovel()" style="padding:7px 14px;background:transparent;color:var(--green);border:0.5px solid var(--green);border-radius:var(--radius);font-size:12px;cursor:pointer;font-family:var(--font)">Cadastrar outro imóvel</button>
-      </div>`;
-    addMsg('agent', html, true);
-    dadosAtuais = null;
-  }).catch(() => {
-    const html = `<p>Copie manualmente a linha abaixo e cole na planilha:</p><div class="csv-box">${csv}</div><button class="btn-copy" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>this.textContent='Copiado ✓')">Copiar linha</button>`;
-    addMsg('agent', html, true);
-  });
+  navigator.clipboard.writeText(csv).catch(function() {});
+  adicionarMsg('a', html, true);
+  dadosAtuais = null;
 }
 
 function corrigir() {
-  addMsg('agent', 'Claro! O que precisa corrigir? Me diga qual informação está errada.', false);
+  adicionarMsg('a', 'Claro! O que precisa corrigir? Me diga qual informação está errada.', false);
 }
 
 function novoImovel() {
   dadosAtuais = null;
   historico = [];
-  addMsg('agent', 'Ótimo! Me envie as informações do próximo imóvel quando quiser. 🏠', false);
+  adicionarMsg('a', 'Ótimo! Me envie as informações do próximo imóvel. 🏠', false);
 }
 
-async function enviar() {
-  const input = document.getElementById('input');
-  const texto = input.value.trim();
+function usarChip(texto) {
+  var inp = document.getElementById('inp');
+  inp.value = texto;
+  enviar();
+}
+
+function enviar() {
+  var inp = document.getElementById('inp');
+  var texto = inp.value.trim();
   if (!texto) return;
 
-  input.value = '';
-  input.style.height = 'auto';
-  addMsg('user', texto);
-
+  inp.value = '';
+  inp.style.height = 'auto';
+  adicionarMsg('u', texto, false);
   historico.push({ role: 'user', content: texto });
-  showTyping(true);
+  mostrarTyping(true);
 
-  try {
-    const resp = await fetch(CLAUDE_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: historico
-      })
-    });
-
-    const data = await resp.json();
-    showTyping(false);
-
-    const reply = data.content?.[0]?.text || '';
+  fetch(CLAUDE_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: SYSTEM,
+      messages: historico
+    })
+  })
+  .then(function(resp) { return resp.json(); })
+  .then(function(data) {
+    mostrarTyping(false);
+    var reply = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
     historico.push({ role: 'assistant', content: reply });
 
-    // Tenta parsear JSON — remove markdown fences primeiro
-    let clean = reply.trim();
-    clean = clean.replace(/^```[a-z]*/i, '').replace(/^```/i, '').replace(/```$/i, '').replace(/^\s+|\s+$/g, '');
-    let parsed = null;
-    try { parsed = JSON.parse(clean); } catch(e) {}
-    if (parsed && parsed.tipo === 'resumo' && parsed.dados) {
-      mostrarResumo(parsed.dados, parsed.msg || 'Aqui está o resumo do imóvel. Confira se está tudo certo:');
-      return;
+    // Limpar possíveis code fences
+    var clean = reply.trim();
+    if (clean.indexOf('```') !== -1) {
+      clean = clean.replace(/```json/g, '').replace(/```/g, '').trim();
     }
-    // Texto normal
-    addMsg('agent', reply.split('\n').join('<br>'), true);
 
-  } catch(e) {
-    showTyping(false);
-    addMsg('agent', '⚠️ Erro de conexão. Verifique sua internet e tente novamente.', false);
-  }
+    // Tentar parsear JSON
+    var parsed = null;
+    try { parsed = JSON.parse(clean); } catch(e) { parsed = null; }
+
+    if (parsed && parsed.tipo === 'resumo' && parsed.dados) {
+      mostrarResumo(parsed.dados, parsed.msg || 'Confira os dados abaixo:');
+    } else {
+      adicionarMsg('a', reply.replace(/\n/g, '<br>'), true);
+    }
+  })
+  .catch(function(e) {
+    mostrarTyping(false);
+    adicionarMsg('a', '⚠️ Erro de conexão. Tente novamente.', false);
+  });
 }
+
+// Event listeners
+document.getElementById('sbtn').addEventListener('click', enviar);
+document.getElementById('inp').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviar();
+  }
+});
+document.getElementById('inp').addEventListener('input', function() {
+  autoResize(this);
+});
 </script>
 </body>
 </html>
