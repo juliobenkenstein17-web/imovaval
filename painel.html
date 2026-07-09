@@ -133,6 +133,7 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
     <button class="nav-item" onclick="showPage('imoveis',this)">🏠 Meus imóveis</button>
     <button class="nav-item" onclick="showPage('agente',this)">🤖 Agente IA</button>
     <button class="nav-item" onclick="showPage('avaliacoes',this)">⭐ Avaliações</button>
+      <button class="nav-item" onclick="showPage('perfil',this)">⚙️ Perfil</button>
   </nav>
   <div class="sb-bottom">
     <a href="index.html" style="display:block;text-align:center;font-size:12px;color:var(--mu);text-decoration:none;margin-bottom:8px">Ver site público ↗</a>
@@ -242,6 +243,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 var usuarioAtual = null;
+var perfilImob = null;
 var historicoChat = [];
 var dadosAtuais = null;
 
@@ -250,14 +252,56 @@ var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de
 
 // AUTH
 onAuthStateChanged(auth, async function(user) {
-  if (!user) {
-    window.location.href = 'login.html';
-    return;
-  }
+  if (!user) { window.location.href = 'login.html'; return; }
   usuarioAtual = user;
-  document.getElementById('sb-nome').textContent = user.email;
+
+  // Carrega perfil da imobiliária
+  try {
+    const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (snap.exists()) {
+      perfilImob = snap.data();
+      document.getElementById('sb-nome').textContent = perfilImob.nome || user.email;
+      document.getElementById('sb-tipo').textContent = perfilImob.tipo === 'imobiliaria' ? 'Imobiliária' : 'Usuário';
+    } else {
+      document.getElementById('sb-nome').textContent = user.email;
+    }
+  } catch(e) {
+    document.getElementById('sb-nome').textContent = user.email;
+  }
+
   carregarImoveis();
 });
+
+window.salvarPerfil = async function() {
+  if (!usuarioAtual) return;
+  try {
+    const { updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    var dados = {
+      nome: document.getElementById('perf-nome').value.trim(),
+      whatsapp: document.getElementById('perf-whatsapp').value.trim(),
+      cnpj: document.getElementById('perf-cnpj').value.trim(),
+      cidade: document.getElementById('perf-cidade').value.trim(),
+      telefone: document.getElementById('perf-telefone').value.trim(),
+      endereco: document.getElementById('perf-endereco').value.trim(),
+    };
+    await updateDoc(doc(db, 'usuarios', usuarioAtual.uid), dados);
+    perfilImob = Object.assign(perfilImob || {}, dados);
+    document.getElementById('sb-nome').textContent = dados.nome || usuarioAtual.email;
+    var msg = document.getElementById('perf-msg');
+    msg.style.display = 'block';
+    msg.style.background = 'var(--gl)';
+    msg.style.color = 'var(--gd)';
+    msg.textContent = '✓ Perfil salvo com sucesso!';
+    setTimeout(() => msg.style.display = 'none', 3000);
+  } catch(e) {
+    var msg = document.getElementById('perf-msg');
+    msg.style.display = 'block';
+    msg.style.background = '#FCEBEB';
+    msg.style.color = '#A32D2D';
+    msg.textContent = '⚠️ Erro ao salvar. Tente novamente.';
+  }
+};
 
 window.sair = async function() {
   await signOut(auth);
@@ -265,8 +309,17 @@ window.sair = async function() {
 };
 
 // NAVEGAÇÃO
-var titulos = {dashboard:'Dashboard',imoveis:'Meus imóveis',agente:'Agente IA',avaliacoes:'Avaliações'};
+var titulos = {dashboard:'Dashboard',imoveis:'Meus imóveis',agente:'Agente IA',avaliacoes:'Avaliações',perfil:'Perfil da Imobiliária'};
 window.showPage = function(id, btn) {
+  // Preenche campos do perfil quando abre a aba
+  if (id === 'perfil' && perfilImob) {
+    document.getElementById('perf-nome').value = perfilImob.nome || '';
+    document.getElementById('perf-whatsapp').value = perfilImob.whatsapp || '';
+    document.getElementById('perf-cnpj').value = perfilImob.cnpj || '';
+    document.getElementById('perf-cidade').value = perfilImob.cidade || '';
+    document.getElementById('perf-telefone').value = perfilImob.telefone || '';
+    document.getElementById('perf-endereco').value = perfilImob.endereco || '';
+  }
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
   document.getElementById('page-'+id).classList.add('active');
@@ -364,7 +417,14 @@ window.publicarNoFirebase = async function() {
     var dados = Object.assign({}, dadosAtuais);
     dados.foto = converterFotos(dados.foto || '');
     dados.uid = usuarioAtual.uid;
-    dados.imobiliaria = dadosAtuais.imobiliaria || usuarioAtual.email;
+    // Usa o nome do perfil se não foi informado no chat
+    if (!dados.imobiliaria && perfilImob && perfilImob.nome) {
+      dados.imobiliaria = perfilImob.nome;
+    }
+    // Usa o whatsapp do perfil se não foi informado no chat
+    if (!dados.whatsapp && perfilImob && perfilImob.whatsapp) {
+      dados.whatsapp = perfilImob.whatsapp;
+    }
     dados.criadoEm = new Date().toISOString();
     dados.status = 'ativo';
     await addDoc(collection(db, 'imoveis'), dados);
