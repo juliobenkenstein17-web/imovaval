@@ -245,7 +245,7 @@ var usuarioAtual = null;
 var historicoChat = [];
 var dadosAtuais = null;
 
-var CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+var CLAUDE_API = 'https://imovaval.vercel.app/api/claude';
 var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. Fotos Google Drive: converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título, preço ou imobiliária, pergunte em texto simples.';
 
 // AUTH
@@ -400,8 +400,6 @@ function enviarChat() {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
       system: SYSTEM,
       messages: historicoChat
     })
