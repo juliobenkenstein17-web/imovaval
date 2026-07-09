@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImovAval — Entrar</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#0F6B4F;--gl:#E7F0EA;--gd:#0A4736;
+  --t:#BD5430;--tl:#F6E6DD;
+  --tx:#221D17;--mu:#6E6457;
+  --bg:#fff;--bg2:#FAF6EE;--bg3:#F1E9D8;
+  --bd:rgba(34,29,23,.12);--bd2:rgba(34,29,23,.22);
+  --r:8px;--rl:12px;
+  --fh:'Fraunces',serif;--f:'Inter',sans-serif;
+}
+body{font-family:var(--f);background:var(--bg3);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:40px 36px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(34,29,23,.08)}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--fh);font-size:22px;font-weight:700;color:var(--g);margin-bottom:8px}
+.tagline{text-align:center;font-size:13px;color:var(--mu);margin-bottom:32px}
+.tabs{display:flex;background:var(--bg2);border-radius:var(--r);padding:3px;margin-bottom:28px}
+.tab{flex:1;padding:8px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--mu);border:none;background:transparent;font-family:var(--f);transition:all .15s;text-align:center}
+.tab.active{background:var(--bg);color:var(--tx);border:.5px solid var(--bd)}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+input[type=email],input[type=password],input[type=text]{width:100%;padding:11px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;color:var(--tx);outline:none;transition:border-color .15s}
+input:focus{border-color:var(--g);background:var(--bg)}
+.btn{width:100%;padding:13px;border:none;border-radius:var(--r);font-family:var(--fh);font-size:15px;font-weight:600;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn-green{background:var(--g);color:#fff}
+.btn-green:hover{background:var(--gd)}
+.btn-ghost{background:transparent;color:var(--g);border:.5px solid var(--g);margin-top:10px}
+.btn-ghost:hover{background:var(--gl)}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:12px;color:var(--mu)}
+.divider::before,.divider::after{content:'';flex:1;height:.5px;background:var(--bd)}
+.tipo-sel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.tipo-btn{padding:14px;border-radius:var(--r);border:.5px solid var(--bd);background:var(--bg2);cursor:pointer;text-align:center;transition:all .15s;font-family:var(--f)}
+.tipo-btn:hover,.tipo-btn.sel{border-color:var(--g);background:var(--gl)}
+.tipo-btn .icon{font-size:24px;display:block;margin-bottom:6px}
+.tipo-btn .lbl{font-size:13px;font-weight:600;color:var(--tx);display:block}
+.tipo-btn .sub{font-size:11px;color:var(--mu);display:block;margin-top:2px}
+.msg{padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:16px;display:none}
+.msg.erro{background:#FCEBEB;color:#A32D2D;border:.5px solid #D88;display:block}
+.msg.ok{background:var(--gl);color:var(--gd);border:.5px solid var(--g);display:block}
+.back{text-align:center;margin-top:16px;font-size:13px;color:var(--mu)}
+.back a{color:var(--g);text-decoration:none;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <svg viewBox="0 0 40 40" width="32" height="32" fill="none">
+      <polygon points="28,0 40,12 40,40 0,40 0,0" fill="#FAF6EE" stroke="#0F6B4F" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="28,0 40,12 28,12" fill="#E7F0EA" stroke="#0F6B4F" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M7 29 L20 15 L33 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M10 29 L10 37 L30 37 L30 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
+      <rect x="15" y="30" width="10" height="7" rx="0.5" fill="none" stroke="#0F6B4F" stroke-width="1.6"/>
+      <text x="20" y="11" text-anchor="middle" font-size="9" fill="#BD5430" font-family="serif">✓</text>
+    </svg>
+    ImovAval
+  </div>
+  <div class="tagline">Aluguel com transparência real</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="mudarAba('entrar',this)">Entrar</button>
+    <button class="tab" onclick="mudarAba('cadastrar',this)">Cadastrar</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <!-- LOGIN -->
+  <div id="tela-entrar">
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-green" onclick="fazerLogin()">Entrar</button>
+    <div class="back">Esqueceu a senha? <a href="#" onclick="recuperarSenha()">Recuperar</a></div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div id="tela-cadastrar" style="display:none">
+    <div class="tipo-sel">
+      <div class="tipo-btn sel" id="tipo-usuario" onclick="selecionarTipo('usuario')">
+        <span class="icon">👤</span>
+        <span class="lbl">Inquilino</span>
+        <span class="sub">Buscar e avaliar</span>
+      </div>
+      <div class="tipo-btn" id="tipo-imobiliaria" onclick="selecionarTipo('imobiliaria')">
+        <span class="icon">🏦</span>
+        <span class="lbl">Imobiliária</span>
+        <span class="sub">Anunciar imóveis</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nome completo / Empresa</label>
+      <input type="text" id="cad-nome" placeholder="Seu nome ou nome da imobiliária" />
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="cad-email" placeholder="seu@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" />
+    </div>
+    <button class="btn btn-green" onclick="fazerCadastro()">Criar conta</button>
+  </div>
+
+  <div class="back" style="margin-top:20px"><a href="index.html">← Voltar ao site</a></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
+  authDomain: "imovaval.firebaseapp.com",
+  projectId: "imovaval",
+  storageBucket: "imovaval.firebasestorage.app",
+  messagingSenderId: "522957936692",
+  appId: "1:522957936692:web:7852a8addee7ce605c1261"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+var tipoSelecionado = 'usuario';
+
+window.mudarAba = function(aba, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tela-entrar').style.display = aba === 'entrar' ? 'block' : 'none';
+  document.getElementById('tela-cadastrar').style.display = aba === 'cadastrar' ? 'block' : 'none';
+  esconderMsg();
+};
+
+window.selecionarTipo = function(tipo) {
+  tipoSelecionado = tipo;
+  document.getElementById('tipo-usuario').classList.toggle('sel', tipo === 'usuario');
+  document.getElementById('tipo-imobiliaria').classList.toggle('sel', tipo === 'imobiliaria');
+};
+
+window.mostrarMsg = function(texto, tipo) {
+  var el = document.getElementById('msg');
+  el.textContent = texto;
+  el.className = 'msg ' + tipo;
+};
+
+window.esconderMsg = function() {
+  document.getElementById('msg').className = 'msg';
+};
+
+window.fazerLogin = async function() {
+  var email = document.getElementById('login-email').value.trim();
+  var senha = document.getElementById('login-senha').value;
+  if (!email || !senha) { mostrarMsg('Preencha e-mail e senha.', 'erro'); return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, senha);
+    // Redireciona conforme o tipo de conta
+    window.location.href = 'painel.html';
+  } catch(e) {
+    mostrarMsg('E-mail ou senha incorretos.', 'erro');
+  }
+};
+
+window.fazerCadastro = async function() {
+  var nome = document.getElementById('cad-nome').value.trim();
+  var email = document.getElementById('cad-email').value.trim();
+  var senha = document.getElementById('cad-senha').value;
+  if (!nome || !email || !senha) { mostrarMsg('Preencha todos os campos.', 'erro'); return; }
+  if (senha.length < 6) { mostrarMsg('A senha precisa ter pelo menos 6 caracteres.', 'erro'); return; }
+  try {
+    var cred = await createUserWithEmailAndPassword(auth, email, senha);
+    await setDoc(doc(db, 'usuarios', cred.user.uid), {
+      nome: nome,
+      email: email,
+      tipo: tipoSelecionado,
+      criadoEm: new Date().toISOString()
+    });
+    mostrarMsg('Conta criada com sucesso! Redirecionando...', 'ok');
+    setTimeout(() => { window.location.href = tipoSelecionado === 'imobiliaria' ? 'painel.html' : 'index.html'; }, 1500);
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') {
+      mostrarMsg('Este e-mail já está cadastrado.', 'erro');
+    } else {
+      mostrarMsg('Erro ao criar conta. Tente novamente.', 'erro');
+    }
+  }
+};
+
+window.recuperarSenha = async function() {
+  var email = document.getElementById('login-email').value.trim();
+  if (!email) { mostrarMsg('Digite seu e-mail para recuperar a senha.', 'erro'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    mostrarMsg('E-mail de recuperação enviado!', 'ok');
+  } catch(e) {
+    mostrarMsg('E-mail não encontrado.', 'erro');
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImovAval — Painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#0F6B4F;--gl:#E7F0EA;--gd:#0A4736;
+  --t:#BD5430;--tl:#F6E6DD;
+  --am:#B07F25;--aml:#F6EEDA;
+  --tx:#221D17;--mu:#6E6457;
+  --bg:#fff;--bg2:#FAF6EE;--bg3:#F1E9D8;
+  --bd:rgba(34,29,23,.12);--bd2:rgba(34,29,23,.22);
+  --r:8px;--rl:12px;
+  --fh:'Fraunces',serif;--f:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+body{font-family:var(--f);background:var(--bg3);color:var(--tx);min-height:100vh;display:flex}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg);border-right:.5px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:10}
+.sb-logo{padding:20px;border-bottom:.5px solid var(--bd);display:flex;align-items:center;gap:9px;font-family:var(--fh);font-size:17px;font-weight:700;color:var(--g)}
+.sb-user{padding:14px 20px;border-bottom:.5px solid var(--bd)}
+.sb-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-tipo{font-size:11px;color:var(--mu);margin-top:2px}
+.sb-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;background:var(--gl);color:var(--gd);padding:2px 8px;border-radius:20px;font-weight:600;margin-top:4px;border:.5px dashed var(--g)}
+nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;border-left:2px solid transparent;transition:all .15s;border:none;background:transparent;width:100%;text-align:left;font-family:var(--f)}
+.nav-item:hover{color:var(--tx);background:var(--bg2)}
+.nav-item.active{color:var(--g);border-left:2px solid var(--g);background:var(--gl)}
+.sb-bottom{padding:16px 20px;border-top:.5px solid var(--bd)}
+.btn-sair{width:100%;padding:9px;background:transparent;color:var(--mu);border:.5px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:13px;cursor:pointer}
+.btn-sair:hover{color:var(--t);border-color:var(--t)}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+.topbar{background:var(--bg);border-bottom:.5px solid var(--bd);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.topbar-title{font-family:var(--fh);font-size:17px;font-weight:700}
+.content{padding:24px 28px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* MÉTRICAS */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.metric{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:18px 20px}
+.metric-icon{font-size:18px;margin-bottom:8px}
+.metric-label{font-size:12px;color:var(--mu);margin-bottom:4px;font-weight:500}
+.metric-value{font-family:var(--fh);font-size:24px;font-weight:700}
+.metric-sub{font-size:11px;color:var(--g);margin-top:4px;font-weight:600}
+
+/* IMOVEIS */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:var(--fh);font-size:16px;font-weight:700}
+.btn-primary{padding:8px 18px;background:var(--g);color:#fff;border:none;border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:var(--gd)}
+.table-wrap{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--mu);padding:10px 14px;border-bottom:.5px solid var(--bd);text-transform:uppercase;letter-spacing:.4px;background:var(--bg2)}
+td{padding:12px 14px;border-bottom:.5px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+.pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block}
+.pill-g{background:var(--gl);color:var(--gd)}
+.pill-am{background:var(--aml);color:var(--am)}
+.tb-btn{padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:.5px solid var(--bd2);background:var(--bg);color:var(--mu);font-family:var(--f);margin-right:4px}
+.tb-btn:hover{border-color:var(--g);color:var(--g)}
+.tb-btn.del{color:#A32D2D;border-color:#FCEBEB}
+.tb-btn.del:hover{background:#FCEBEB}
+.empty{text-align:center;padding:40px 20px;color:var(--mu);font-size:13px}
+
+/* AGENTE CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 120px);max-height:700px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.chat-msgs{flex:1;overflow-y:auto;padding:20px}
+.msg{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.msg.u{flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.av.a{background:var(--g);color:#fff}
+.av.u{background:var(--t);color:#fff}
+.bub{max-width:78%;padding:10px 14px;border-radius:var(--rl);font-size:13px;line-height:1.65}
+.bub.a{background:var(--bg2);border:.5px solid var(--bd);border-bottom-left-radius:3px}
+.bub.u{background:var(--g);color:#fff;border-bottom-right-radius:3px}
+.tag{display:inline-block;background:var(--gl);color:var(--gd);font-size:11px;padding:2px 7px;border-radius:4px;margin:2px}
+.warn-box{background:var(--aml);color:var(--am);font-size:12px;padding:8px 12px;border-radius:var(--r);margin-top:8px;border-left:3px solid var(--am)}
+.typing-wrap{display:none;gap:10px;margin-bottom:14px;align-items:flex-start;padding:0 20px}
+.typing-wrap.on{display:flex}
+.dots{display:flex;gap:4px;padding:12px 14px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rl);border-bottom-left-radius:3px}
+.d{width:6px;height:6px;border-radius:50%;background:var(--mu);animation:bou 1.2s infinite}
+.d:nth-child(2){animation-delay:.2s}.d:nth-child(3){animation-delay:.4s}
+@keyframes bou{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.chat-input{border-top:.5px solid var(--bd);padding:12px 16px;display:flex;gap:8px}
+textarea.cinp{flex:1;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:13px;color:var(--tx);outline:none;resize:none;min-height:42px;max-height:100px;line-height:1.5}
+textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
+.csend{width:42px;height:42px;background:var(--g);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.csend:hover{background:var(--gd)}
+
+/* CARD RESUMO */
+.card-res{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:14px;margin-top:10px}
+.card-res-tit{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--g);margin-bottom:10px}
+.res-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:.5px solid var(--bd)}
+.res-row:last-of-type{border:none}
+.res-l{color:var(--mu)}
+.res-v{font-weight:500;font-size:12px;text-align:right;max-width:55%}
+.bpub{width:100%;padding:10px;background:var(--g);color:#fff;border:none;border-radius:var(--r);font-family:var(--fh);font-size:13px;font-weight:600;cursor:pointer;margin-top:12px}
+.bpub:hover{background:var(--gd)}
+.bcor{width:100%;padding:8px;background:transparent;color:var(--t);border:.5px solid var(--t);border-radius:var(--r);font-family:var(--f);font-size:12px;cursor:pointer;margin-top:6px}
+.csv-box{background:var(--gl);border:.5px solid var(--g);border-radius:var(--r);padding:10px;font-family:monospace;font-size:10px;color:var(--gd);word-break:break-all;margin-top:10px}
+
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <svg viewBox="0 0 40 40" width="26" height="26" fill="none">
+      <polygon points="28,0 40,12 40,40 0,40 0,0" fill="#FAF6EE" stroke="#0F6B4F" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="28,0 40,12 28,12" fill="#E7F0EA" stroke="#0F6B4F" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M7 29 L20 15 L33 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M10 29 L10 37 L30 37 L30 29" fill="none" stroke="#0F6B4F" stroke-width="2.2" stroke-linejoin="round"/>
+      <rect x="15" y="30" width="10" height="7" rx="0.5" fill="none" stroke="#0F6B4F" stroke-width="1.6"/>
+    </svg>
+    ImovAval
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-name" id="sb-nome">Carregando...</div>
+    <div class="sb-user-tipo" id="sb-tipo">Imobiliária</div>
+    <div class="sb-badge">✓ parceira</div>
+  </div>
+  <nav>
+    <button class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-item" onclick="showPage('imoveis',this)">🏠 Meus imóveis</button>
+    <button class="nav-item" onclick="showPage('agente',this)">🤖 Agente IA</button>
+    <button class="nav-item" onclick="showPage('avaliacoes',this)">⭐ Avaliações</button>
+  </nav>
+  <div class="sb-bottom">
+    <a href="index.html" style="display:block;text-align:center;font-size:12px;color:var(--mu);text-decoration:none;margin-bottom:8px">Ver site público ↗</a>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="page-title">Dashboard</div>
+    <button class="btn-primary" onclick="showPage('agente',null)">+ Novo imóvel via IA</button>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="metrics">
+        <div class="metric"><div class="metric-icon">🏠</div><div class="metric-label">Imóveis ativos</div><div class="metric-value" id="dash-total">0</div><div class="metric-sub">No banco de dados</div></div>
+        <div class="metric"><div class="metric-icon">⭐</div><div class="metric-label">Avaliações</div><div class="metric-value">—</div><div class="metric-sub">Em breve</div></div>
+        <div class="metric"><div class="metric-icon">👁️</div><div class="metric-label">Visualizações</div><div class="metric-value">—</div><div class="metric-sub">Em breve</div></div>
+      </div>
+      <div style="background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:20px 24px">
+        <div class="sec-title" style="margin-bottom:12px">Bem-vindo ao painel!</div>
+        <p style="font-size:13px;color:var(--mu);line-height:1.7">Use o <strong>Agente IA</strong> para cadastrar imóveis de forma simples — basta descrever o imóvel em linguagem natural. Ou acesse <strong>Meus imóveis</strong> para gerenciar os anúncios existentes.</p>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="showPage('agente',null)">🤖 Cadastrar via Agente IA</button>
+          <button onclick="showPage('imoveis',null)" style="padding:8px 18px;background:transparent;color:var(--g);border:.5px solid var(--g);border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:500;cursor:pointer">🏠 Ver meus imóveis</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEUS IMÓVEIS -->
+    <div id="page-imoveis" class="page">
+      <div class="sec-head">
+        <span class="sec-title">Meus imóveis</span>
+        <button class="btn-primary" onclick="showPage('agente',null)">+ Adicionar via IA</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Imóvel</th><th>Tipo</th><th>Preço</th><th>Cidade</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="tabela-imoveis"><tr><td colspan="6" class="empty">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="background:var(--gl);border-radius:var(--r);padding:12px 16px;font-size:12px;color:var(--gd)">
+        💡 Os imóveis cadastrados aqui aparecem automaticamente no site público.
+      </div>
+    </div>
+
+    <!-- AGENTE IA -->
+    <div id="page-agente" class="page">
+      <div class="sec-head">
+        <span class="sec-title">Agente de Cadastro IA</span>
+        <button onclick="novoImovel()" style="padding:7px 14px;background:transparent;color:var(--mu);border:.5px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:13px;cursor:pointer">Nova conversa</button>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg">
+            <div class="av a">IA</div>
+            <div class="bub a">
+              Olá! Sou o agente de cadastro. Descreva o imóvel que quero publicar e eu organizo tudo automaticamente! 🏠<br><br>
+              Pode ser informal — como uma mensagem de WhatsApp.
+              <div class="warn-box">💡 Inclua: tipo, preço, endereço, quartos, imobiliária. Fotos: cole links do Google Drive ou Imgur.</div>
+            </div>
+          </div>
+        </div>
+        <div class="typing-wrap" id="typing">
+          <div class="av a">IA</div>
+          <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
+        </div>
+        <div class="chat-input">
+          <textarea class="cinp" id="chat-inp" placeholder="Descreva o imóvel aqui..." rows="1"></textarea>
+          <button class="csend" id="chat-send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVALIAÇÕES -->
+    <div id="page-avaliacoes" class="page">
+      <div class="sec-head"><span class="sec-title">Avaliações recebidas</span></div>
+      <div style="background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:40px;text-align:center;color:var(--mu);font-size:13px">
+        Em breve — as avaliações dos seus imóveis aparecerão aqui.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
+  authDomain: "imovaval.firebaseapp.com",
+  projectId: "imovaval",
+  storageBucket: "imovaval.firebasestorage.app",
+  messagingSenderId: "522957936692",
+  appId: "1:522957936692:web:7852a8addee7ce605c1261"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+var usuarioAtual = null;
+var historicoChat = [];
+var dadosAtuais = null;
+
+var CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. Fotos Google Drive: converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título, preço ou imobiliária, pergunte em texto simples.';
+
+// AUTH
+onAuthStateChanged(auth, async function(user) {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  usuarioAtual = user;
+  document.getElementById('sb-nome').textContent = user.email;
+  carregarImoveis();
+});
+
+window.sair = async function() {
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+
+// NAVEGAÇÃO
+var titulos = {dashboard:'Dashboard',imoveis:'Meus imóveis',agente:'Agente IA',avaliacoes:'Avaliações'};
+window.showPage = function(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('page-title').textContent = titulos[id]||'';
+  if (btn) btn.classList.add('active');
+};
+
+// CARREGAR IMÓVEIS
+async function carregarImoveis() {
+  if (!usuarioAtual) return;
+  try {
+    var q = query(collection(db, 'imoveis'), where('uid', '==', usuarioAtual.uid));
+    var snap = await getDocs(q);
+    var imoveis = [];
+    snap.forEach(function(d){ imoveis.push({id:d.id, ...d.data()}); });
+    document.getElementById('dash-total').textContent = imoveis.length;
+    renderTabela(imoveis);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderTabela(lista) {
+  var tbody = document.getElementById('tabela-imoveis');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum imóvel cadastrado.<br>Use o Agente IA para adicionar o primeiro!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(function(im) {
+    var preco = im.preco ? 'R$ ' + Number(im.preco).toLocaleString('pt-BR') : '—';
+    return '<tr><td><div style="font-weight:600">'+(im.titulo||'Sem título')+'</div><div style="font-size:11px;color:var(--mu)">'+(im.endereco||'')+'</div></td><td>'+(im.tipo||'—')+'</td><td style="font-family:var(--fm);font-size:12px">'+preco+'</td><td>'+(im.cidade||'—')+'</td><td><span class="pill pill-g">Ativo</span></td><td><button class="tb-btn del" onclick="excluirImovel(\''+im.id+'\')">Excluir</button></td></tr>';
+  }).join('');
+}
+
+window.excluirImovel = async function(id) {
+  if (!confirm('Excluir este imóvel?')) return;
+  await deleteDoc(doc(db, 'imoveis', id));
+  carregarImoveis();
+};
+
+// CHAT AGENTE
+function addMsg(papel, html, isHtml) {
+  var msgs = document.getElementById('chat-msgs');
+  var div = document.createElement('div');
+  div.className = 'msg' + (papel==='u'?' u':'');
+  var av = document.createElement('div');
+  av.className = 'av ' + papel;
+  av.textContent = papel==='u'?'EU':'IA';
+  var bub = document.createElement('div');
+  bub.className = 'bub ' + papel;
+  if (isHtml) bub.innerHTML = html; else bub.textContent = html;
+  if (papel==='u'){div.appendChild(bub);div.appendChild(av);}
+  else{div.appendChild(av);div.appendChild(bub);}
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping(on) {
+  document.getElementById('typing').className = on ? 'typing-wrap on' : 'typing-wrap';
+  document.getElementById('chat-msgs').scrollTop = 99999;
+}
+
+function converterFotos(links) {
+  if (!links) return '';
+  return links.split(/[;\n,]+/).map(function(l){
+    l = l.trim();
+    var m = l.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (m) return 'https://lh3.googleusercontent.com/d/'+m[1];
+    if (l.indexOf('http')===0) return l;
+    return '';
+  }).filter(Boolean).join(';');
+}
+
+function mostrarResumo(dados, msg) {
+  dadosAtuais = dados;
+  var preco = dados.preco ? 'R$ '+Number(dados.preco).toLocaleString('pt-BR')+'/mês' : '—';
+  var campos = [
+    ['Título',dados.titulo],['Tipo',dados.tipo],['Preço',preco],
+    ['Endereço',dados.endereco],['Bairro',dados.bairro],['Cidade',dados.cidade],
+    ['Área',dados.area?dados.area+'m²':'—'],['Quartos',dados.quartos||'—'],
+    ['Banheiros',dados.banheiros||'—'],['Garagem',dados.garagem||'0'],
+    ['Comodidades',dados.comodidades||'—'],['Imobiliária',dados.imobiliaria],
+    ['WhatsApp',dados.whatsapp||'—']
+  ];
+  var rows = campos.map(function(c){
+    return '<div class="res-row"><span class="res-l">'+c[0]+'</span><span class="res-v">'+(c[1]||'—')+'</span></div>';
+  }).join('');
+  var html = '<p style="margin-bottom:10px">'+msg+'</p><div class="card-res"><div class="card-res-tit">📋 Resumo do imóvel</div>'+rows+'<button class="bpub" onclick="publicarNoFirebase()">✓ Publicar no site</button><button class="bcor" onclick="corrigir()">Corrigir informação</button></div>';
+  addMsg('a', html, true);
+}
+
+window.publicarNoFirebase = async function() {
+  if (!dadosAtuais || !usuarioAtual) return;
+  try {
+    var dados = Object.assign({}, dadosAtuais);
+    dados.foto = converterFotos(dados.foto || '');
+    dados.uid = usuarioAtual.uid;
+    dados.imobiliaria = dadosAtuais.imobiliaria || usuarioAtual.email;
+    dados.criadoEm = new Date().toISOString();
+    dados.status = 'ativo';
+    await addDoc(collection(db, 'imoveis'), dados);
+    addMsg('a', '✅ Imóvel publicado com sucesso! Já aparece no site para os inquilinos.', false);
+    dadosAtuais = null;
+    carregarImoveis();
+  } catch(e) {
+    addMsg('a', '⚠️ Erro ao publicar. Tente novamente.', false);
+  }
+};
+
+window.corrigir = function() {
+  addMsg('a', 'O que precisa corrigir? Me diga a informação errada.', false);
+};
+
+window.novoImovel = function() {
+  dadosAtuais = null;
+  historicoChat = [];
+  addMsg('a', 'Nova conversa iniciada! Me descreva o próximo imóvel. 🏠', false);
+};
+
+function enviarChat() {
+  var inp = document.getElementById('chat-inp');
+  var texto = inp.value.trim();
+  if (!texto) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  addMsg('u', texto, false);
+  historicoChat.push({role:'user',content:texto});
+  showTyping(true);
+
+  fetch(CLAUDE_API, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: SYSTEM,
+      messages: historicoChat
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    showTyping(false);
+    var reply = (data.content && data.content[0] && data.content[0].text) || '';
+    historicoChat.push({role:'assistant',content:reply});
+    var clean = reply.trim().replace(/```json/g,'').replace(/```/g,'').trim();
+    var parsed = null;
+    try { parsed = JSON.parse(clean); } catch(e) {}
+    if (parsed && parsed.tipo === 'resumo' && parsed.dados) {
+      mostrarResumo(parsed.dados, parsed.msg || 'Confira os dados:');
+    } else {
+      addMsg('a', reply.replace(/\n/g,'<br>'), true);
+    }
+  })
+  .catch(function(){
+    showTyping(false);
+    addMsg('a', '⚠️ Erro de conexão. Tente novamente.', false);
+  });
+}
+
+document.getElementById('chat-send').addEventListener('click', enviarChat);
+document.getElementById('chat-inp').addEventListener('keydown', function(e){
+  if (e.key==='Enter' && !e.shiftKey){e.preventDefault();enviarChat();}
+});
+document.getElementById('chat-inp').addEventListener('input', function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,100)+'px';
+});
+</script>
+</body>
+</html>
