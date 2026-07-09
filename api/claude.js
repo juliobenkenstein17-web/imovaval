@@ -7,7 +7,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
   try {
-    const { messages, system } = req.body;
+    const body = req.body || {};
+    const messages = body.messages || [];
+    const system = body.system || '';
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -16,15 +19,25 @@ module.exports = async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        system: system || '',
-        messages: messages || []
+        system: system,
+        messages: messages
       })
     });
-    const data = await response.json();
-    res.status(200).json(data);
+
+    const text = await response.text();
+    console.log('Anthropic response status:', response.status);
+    console.log('Anthropic response:', text.substring(0, 200));
+    
+    try {
+      const data = JSON.parse(text);
+      res.status(200).json(data);
+    } catch(e) {
+      res.status(200).json({ content: [{ type: 'text', text: text }] });
+    }
   } catch (e) {
+    console.error('Handler error:', e.message);
     res.status(500).json({ error: e.message });
   }
 };
