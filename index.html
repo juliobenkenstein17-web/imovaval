@@ -403,6 +403,16 @@
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIMPmJXnIl-zc-HVtFSgOAc6n7GguXaSObW83bEQN0QyJ22E-oTGCWg7Dtd5jaY3vdPQWUPuA-5bIS/pub?gid=210326485&single=true&output=csv';
 const PROXY_URL  = 'https://api.allorigins.win/raw?url=';
 
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
+  authDomain: "imovaval.firebaseapp.com",
+  projectId: "imovaval",
+  storageBucket: "imovaval.firebasestorage.app",
+  messagingSenderId: "522957936692",
+  appId: "1:522957936692:web:7852a8addee7ce605c1261"
+};
+
 // Google Forms — Avaliações
 const FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc93oTasK3S9zBr0kgJJwdqYSbwGCphB1h-P1CyemEX7WZgxw/formResponse';
 const FORM_FIELDS = {
@@ -444,22 +454,39 @@ const cores  = ['#E7F0EA','#F3E6D8','#EFE3E6','#F6E6DD','#E5EAE3','#EDE6D4'];
 // =================== CARREGAR PLANILHA ===================
 async function carregarImoveis() {
   try {
-    let csv = null;
-    try { const r = await fetch(SHEETS_URL); if (r.ok) { const t = await r.text(); if (t && t.length > 10) csv = t; } } catch(e) {}
-    if (!csv) { const r2 = await fetch(PROXY_URL + encodeURIComponent(SHEETS_URL)); if (!r2.ok) throw new Error('HTTP '+r2.status); csv = await r2.text(); }
-    if (!csv || csv.length < 10) throw new Error('Planilha vazia');
-    const linhas = csv.trim().split('\n');
-    if (linhas.length < 2) { mostrarVazio(); return; }
-    let headerIdx = 0;
-    for (let i = 0; i < Math.min(linhas.length, 6); i++) {
-      if (linhas[i].toLowerCase().includes('titulo') || linhas[i].toLowerCase().includes('preco')) { headerIdx = i; break; }
-    }
-    const headers = parseLinha(linhas[headerIdx]);
-    todosImoveis = linhas.slice(headerIdx + 1).map(l => {
-      const vals = parseLinha(l); const o = {};
-      headers.forEach((h, i) => o[h.trim()] = (vals[i]||'').trim());
-      return o;
-    }).filter(i => (i.status||'ativo').toLowerCase() === 'ativo');
+    // Tenta carregar do Firebase primeiro
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getFirestore, collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    
+    const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const db = getFirestore(fbApp);
+    const snap = await getDocs(collection(db, 'imoveis'));
+    const doFirebase = [];
+    snap.forEach(d => { const data = d.data(); if((data.status||'ativo').toLowerCase()==='ativo') doFirebase.push({id:d.id,...data}); });
+
+    // Também carrega da planilha (imóveis antigos)
+    let doSheets = [];
+    try {
+      let csv = null;
+      try { const r = await fetch(SHEETS_URL); if (r.ok) { const t = await r.text(); if (t && t.length > 10) csv = t; } } catch(e) {}
+      if (!csv) { const r2 = await fetch(PROXY_URL + encodeURIComponent(SHEETS_URL)); if (r2.ok) csv = await r2.text(); }
+      if (csv && csv.length > 10) {
+        const linhas = csv.trim().split('\n');
+        let headerIdx = 0;
+        for (let i = 0; i < Math.min(linhas.length, 6); i++) {
+          if (linhas[i].toLowerCase().includes('titulo') || linhas[i].toLowerCase().includes('preco')) { headerIdx = i; break; }
+        }
+        const headers = parseLinha(linhas[headerIdx]);
+        doSheets = linhas.slice(headerIdx + 1).map(l => {
+          const vals = parseLinha(l); const o = {};
+          headers.forEach((h, i) => o[h.trim()] = (vals[i]||'').trim());
+          return o;
+        }).filter(i => (i.status||'ativo').toLowerCase() === 'ativo');
+      }
+    } catch(e) {}
+
+    // Combina os dois — Firebase tem prioridade
+    todosImoveis = [...doFirebase, ...doSheets];
 
     // Carrega avaliações para calcular nota média real de cada imóvel
     await carregarTodasAvaliacoes();
@@ -475,7 +502,7 @@ async function carregarImoveis() {
     renderImobs(imobs);
     popularSelectImob(imobs);
   } catch(e) {
-    document.getElementById('imoveis-grid').innerHTML = '<div class="erro-box"><strong>⚠️ Não foi possível carregar os imóveis.</strong><br><br>Verifique se a planilha está publicada corretamente.<br><br><small style="color:#888">Erro: '+e.message+'</small></div>';
+    document.getElementById('imoveis-grid').innerHTML = '<div class="erro-box"><strong>⚠️ Não foi possível carregar os imóveis.</strong><br><br><small style="color:#888">Erro: '+e.message+'</small></div>';
     document.getElementById('grid-titulo').textContent = 'Erro ao carregar';
   }
 }
