@@ -131,9 +131,9 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
   <nav>
     <button class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
     <button class="nav-item" onclick="showPage('imoveis',this)">🏠 Meus imóveis</button>
-    <button class="nav-item" onclick="showPage('agente',this)">🤖 Agente IA</button>
+    <button class="nav-item imob-only" onclick="showPage('agente',this)" style="display:none">🤖 Agente IA</button>
     <button class="nav-item" onclick="showPage('avaliacoes',this)">⭐ Avaliações</button>
-      <button class="nav-item" onclick="showPage('perfil',this)">⚙️ Perfil</button>
+    <button class="nav-item" onclick="showPage('perfil',this)">⚙️ Perfil</button>
   </nav>
   <div class="sb-bottom">
     <a href="index.html" style="display:block;text-align:center;font-size:12px;color:var(--mu);text-decoration:none;margin-bottom:8px">Ver site público ↗</a>
@@ -144,7 +144,7 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
 <div class="main">
   <header class="topbar">
     <div class="topbar-title" id="page-title">Dashboard</div>
-    <button class="btn-primary" onclick="showPage('agente',null)">+ Novo imóvel via IA</button>
+    <button class="btn-primary imob-only" onclick="showPage('agente',null)" style="display:none">+ Novo imóvel via IA</button>
   </header>
 
   <div class="content">
@@ -213,6 +213,24 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
       </div>
     </div>
 
+    <!-- PERFIL -->
+    <div id="page-perfil" class="page">
+      <div class="sec-head"><span class="sec-title">Perfil da Imobiliária</span></div>
+      <div style="background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:24px 28px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Nome da Imobiliária</label><input type="text" id="perf-nome" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" /></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">WhatsApp</label><input type="text" id="perf-whatsapp" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" placeholder="51999991234" /></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">CNPJ</label><input type="text" id="perf-cnpj" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" placeholder="12.345.678/0001-99" /></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Cidade de Atuação</label><input type="text" id="perf-cidade" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" placeholder="Novo Hamburgo, RS" /></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Telefone</label><input type="text" id="perf-telefone" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" placeholder="(51) 3000-1234" /></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Endereço</label><input type="text" id="perf-endereco" style="width:100%;padding:10px 13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);font-family:var(--f);font-size:14px;outline:none" placeholder="Rua XV de Novembro, 340" /></div>
+        </div>
+        <div id="perf-msg" style="display:none;margin-top:14px;padding:10px 14px;border-radius:var(--r);font-size:13px"></div>
+        <button onclick="salvarPerfil()" style="margin-top:16px;padding:11px 24px;background:var(--g);color:#fff;border:none;border-radius:var(--r);font-family:var(--fh);font-size:14px;font-weight:600;cursor:pointer">Salvar perfil</button>
+      </div>
+      <div style="background:var(--gl);border-radius:var(--r);padding:12px 16px;font-size:12px;color:var(--gd)">💡 O nome e WhatsApp são usados automaticamente pelo Agente IA ao cadastrar imóveis.</div>
+    </div>
+
     <!-- AVALIAÇÕES -->
     <div id="page-avaliacoes" class="page">
       <div class="sec-head"><span class="sec-title">Avaliações recebidas</span></div>
@@ -268,6 +286,11 @@ onAuthStateChanged(auth, async function(user) {
     }
   } catch(e) {
     document.getElementById('sb-nome').textContent = user.email;
+  }
+
+  // Mostra elementos exclusivos para imobiliária
+  if (perfilImob && perfilImob.tipo === 'imobiliaria') {
+    document.querySelectorAll('.imob-only').forEach(function(el) { el.style.display = ''; });
   }
 
   carregarImoveis();
