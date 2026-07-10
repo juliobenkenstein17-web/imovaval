@@ -133,7 +133,7 @@ input:focus{border-color:var(--g);background:var(--bg)}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
@@ -180,9 +180,11 @@ window.fazerLogin = async function() {
   var senha = document.getElementById('login-senha').value;
   if (!email || !senha) { mostrarMsg('Preencha e-mail e senha.', 'erro'); return; }
   try {
-    await signInWithEmailAndPassword(auth, email, senha);
-    // Redireciona conforme o tipo de conta
-    window.location.href = 'painel.html';
+    var cred = await signInWithEmailAndPassword(auth, email, senha);
+    // Busca o tipo do usuário no Firestore para redirecionar corretamente
+    var snap = await getDoc(doc(db, 'usuarios', cred.user.uid));
+    var tipo = snap.exists() ? (snap.data().tipo || 'usuario') : 'usuario';
+    window.location.href = tipo === 'imobiliaria' ? 'painel.html' : 'index.html';
   } catch(e) {
     mostrarMsg('E-mail ou senha incorretos.', 'erro');
   }

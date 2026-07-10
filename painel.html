@@ -290,19 +290,23 @@ onAuthStateChanged(auth, async function(user) {
     const snap = await getDoc(doc(db, 'usuarios', user.uid));
     if (snap.exists()) {
       perfilImob = snap.data();
+      // Bloqueia acesso ao painel para não-imobiliárias
+      if (perfilImob.tipo !== 'imobiliaria') {
+        window.location.href = 'index.html';
+        return;
+      }
       document.getElementById('sb-nome').textContent = perfilImob.nome || user.email;
-      document.getElementById('sb-tipo').textContent = perfilImob.tipo === 'imobiliaria' ? 'Imobiliária' : 'Usuário';
+      document.getElementById('sb-tipo').textContent = 'Imobiliária';
     } else {
-      document.getElementById('sb-nome').textContent = user.email;
+      window.location.href = 'index.html';
+      return;
     }
   } catch(e) {
     document.getElementById('sb-nome').textContent = user.email;
   }
 
   // Mostra elementos exclusivos para imobiliária
-  if (perfilImob && perfilImob.tipo === 'imobiliaria') {
-    document.querySelectorAll('.imob-only').forEach(function(el) { el.style.display = ''; });
-  }
+  document.querySelectorAll('.imob-only').forEach(function(el) { el.style.display = ''; });
 
   carregarImoveis();
 });
