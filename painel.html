@@ -266,7 +266,18 @@ var historicoChat = [];
 var dadosAtuais = null;
 
 var CLAUDE_API = 'https://imovaval.vercel.app/api/claude';
-var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. Fotos Google Drive: converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título, preço ou imobiliária, pergunte em texto simples.';
+var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. Fotos Google Drive: converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título, preço, pergunte em texto simples. NÃO peça imobiliária nem whatsapp pois já estão no perfil do usuário logado.';
+
+function getSYSTEM() {
+  var base = SYSTEM;
+  if (perfilImob) {
+    base += '\n\nDADOS DA IMOBILIÁRIA LOGADA (use automaticamente, não peça ao usuário):\n';
+    if (perfilImob.nome) base += 'Imobiliária: ' + perfilImob.nome + '\n';
+    if (perfilImob.whatsapp) base += 'WhatsApp: ' + perfilImob.whatsapp + '\n';
+    if (perfilImob.cidade) base += 'Cidade padrão: ' + perfilImob.cidade + '\n';
+  }
+  return base;
+}
 
 // AUTH
 onAuthStateChanged(auth, async function(user) {
@@ -483,7 +494,7 @@ function enviarChat() {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
-      system: SYSTEM,
+      system: getSYSTEM(),
       messages: historicoChat
     })
   })
