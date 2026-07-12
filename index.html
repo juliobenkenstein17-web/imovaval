@@ -377,18 +377,24 @@
 
   <!-- PERFIL -->
   <div id="page-perfil" class="page">
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:20px;display:flex;align-items:center;gap:20px">
-      <div style="width:68px;height:68px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:24px;font-weight:700;color:var(--gd)">JB</div>
-      <div>
-        <div style="font-family:var(--font-head);font-size:20px;font-weight:700">Julio Benkenstein</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:3px">Fundador · Novo Hamburgo, RS</div>
-        <div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;background:var(--aml);color:var(--amber);padding:4px 12px;border-radius:20px;margin-top:8px;font-weight:700">🏅 Fundador da plataforma</div>
-      </div>
+    <div id="perfil-nao-logado" style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:40px 32px;text-align:center">
+      <div style="font-family:var(--font-head);font-size:19px;font-weight:700;margin-bottom:8px">Entre para ver sua conta</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:18px">Faça login para acompanhar seus dados, imóveis e avaliações.</p>
+      <a href="login.html" style="display:inline-block;padding:10px 22px;border-radius:var(--radius);background:var(--green);color:white;font-size:13px;font-weight:600;text-decoration:none;font-family:var(--font)">Entrar / Cadastrar</a>
     </div>
-    <div class="metrics">
-      <div class="metric"><div class="metric-label">Imóveis cadastrados</div><div class="metric-value" id="perfil-imoveis">—</div><div class="metric-sub">Via planilha</div></div>
-      <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value" id="perfil-avaliacoes">—</div><div class="metric-sub">Na plataforma</div></div>
-      <div class="metric"><div class="metric-label">Imobiliárias parceiras</div><div class="metric-value" id="perfil-imobs">—</div><div class="metric-sub">Ativas</div></div>
+    <div id="perfil-logado" style="display:none">
+      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:20px;display:flex;align-items:center;gap:20px">
+        <div id="perfil-avatar" style="width:68px;height:68px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:24px;font-weight:700;color:var(--gd)">–</div>
+        <div>
+          <div id="perfil-nome" style="font-family:var(--font-head);font-size:20px;font-weight:700">—</div>
+          <div id="perfil-subtitulo" style="font-size:13px;color:var(--muted);margin-top:3px">—</div>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Imóveis no site</div><div class="metric-value" id="perfil-imoveis">—</div><div class="metric-sub">No total</div></div>
+        <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value" id="perfil-avaliacoes">—</div><div class="metric-sub">Na plataforma</div></div>
+        <div class="metric"><div class="metric-label">Imobiliárias parceiras</div><div class="metric-value" id="perfil-imobs">—</div><div class="metric-sub">Ativas</div></div>
+      </div>
     </div>
   </div>
 
@@ -990,8 +996,28 @@ carregarImoveis();
           await signOut(auth);
           window.location.reload();
         };
+
+        // Preenche a aba "Minha conta" com os dados reais de quem está logado
+        var cidade = '';
+        try {
+          const snap2 = await getDoc(doc(db, 'usuarios', user.uid));
+          if (snap2.exists()) cidade = snap2.data().cidade || '';
+        } catch(e) {}
+        const elNome = document.getElementById('perfil-nome');
+        if (elNome) {
+          document.getElementById('perfil-avatar').textContent = primeiroNome[0].toUpperCase();
+          elNome.textContent = nome;
+          document.getElementById('perfil-subtitulo').textContent = (tipo === 'imobiliaria' ? 'Imobiliária' : 'Inquilino') + (cidade ? ' · ' + cidade : '');
+          document.getElementById('perfil-nao-logado').style.display = 'none';
+          document.getElementById('perfil-logado').style.display = 'block';
+        }
       } else {
         navAuth.innerHTML = '<a href="login.html" style="padding:8px 18px;border-radius:var(--radius);background:var(--green);color:white;font-size:13px;font-weight:600;text-decoration:none;font-family:var(--font)">Entrar / Cadastrar</a>';
+        const elNaoLogado = document.getElementById('perfil-nao-logado');
+        if (elNaoLogado) {
+          elNaoLogado.style.display = 'block';
+          document.getElementById('perfil-logado').style.display = 'none';
+        }
       }
     });
   } catch(e) {}
