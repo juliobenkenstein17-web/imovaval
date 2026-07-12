@@ -49,8 +49,14 @@
     .hero-title span { color: var(--green); }
     .hero-sub { font-size: 14px; color: var(--muted); margin-bottom: 22px; max-width: 520px; line-height: 1.6; }
     .search-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-    .search-bar input { flex: 1; min-width: 200px; padding: 11px 15px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 14px; color: var(--text); outline: none; }
-    .search-bar input:focus { border-color: var(--green); background: var(--bg); }
+    .busca-input-wrap { position: relative; flex: 1; min-width: 200px; }
+    .busca-input-wrap input { width: 100%; padding: 11px 15px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 14px; color: var(--text); outline: none; }
+    .busca-input-wrap input:focus { border-color: var(--green); background: var(--bg); }
+    .cidade-sugestoes { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(34,29,23,0.12); z-index: 60; max-height: 260px; overflow-y: auto; }
+    .cidade-sugestoes.open { display: block; }
+    .cidade-sugestao-item { padding: 9px 15px; font-size: 13px; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .cidade-sugestao-item:hover, .cidade-sugestao-item.hl { background: var(--gl); color: var(--gd); }
+    .cidade-sugestao-vazio { padding: 10px 15px; font-size: 12px; color: var(--muted); }
     .search-bar select { padding: 11px 13px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); font-family: var(--font); font-size: 13px; color: var(--text); outline: none; }
     .search-btn { padding: 11px 22px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
     .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -222,7 +228,11 @@
       <h1 class="hero-title">Encontre seu próximo lar<br>com <span>transparência real</span></h1>
       <p class="hero-sub">Avaliações reais de ex-inquilinos, imobiliárias verificadas e imóveis com histórico completo.</p>
       <div class="search-bar">
-        <input type="text" id="busca-input" placeholder="Bairro, cidade ou endereço..." oninput="filtrarImoveis()" />
+        <div class="busca-input-wrap">
+          <input type="text" id="busca-input" placeholder="Bairro, cidade ou endereço..." autocomplete="off"
+                 oninput="onBuscaInput()" onfocus="onBuscaInput()" onblur="esconderSugestoesCidade()" onkeydown="onBuscaKeydown(event)" />
+          <div class="cidade-sugestoes" id="cidade-sugestoes"></div>
+        </div>
         <select id="busca-tipo" onchange="filtrarImoveis()">
           <option value="">Tipo de imóvel</option>
           <option>Apartamento</option><option>Casa</option><option>Studio</option><option>Kitnet</option><option>Cobertura</option>
@@ -236,7 +246,6 @@
         <button class="chip" onclick="toggleChip(this,'piscina')">Piscina</button>
         <button class="chip" onclick="toggleChip(this,'academia')">Academia</button>
       </div>
-      <div class="filter-row" id="cidades-row" style="margin-top:8px"></div>
     </div>
     <div class="metrics">
       <div class="metric"><div class="metric-label">Imóveis disponíveis</div><div class="metric-value" id="total-imoveis">—</div><div class="metric-sub">Atualizados em tempo real</div></div>
@@ -496,7 +505,6 @@ async function carregarImoveis() {
     await carregarTodasAvaliacoes();
     aplicarNotasReais();
 
-    renderCidades();
     renderImoveis(todosImoveis);
     const imobs = [...new Set(todosImoveis.map(i => i.imobiliaria).filter(Boolean))];
     document.getElementById('total-imoveis').textContent = todosImoveis.length;
@@ -523,28 +531,91 @@ function mostrarVazio() {
   document.getElementById('total-imoveis').textContent='0';
 }
 
-// =================== FILTROS ===================
-function renderCidades() {
-  // Se CIDADES_RS_ORDENADAS estiver disponível, usar aquela lista completa
-  let cidades;
-  
-  if (typeof CIDADES_RS_ORDENADAS !== 'undefined') {
-    cidades = CIDADES_RS_ORDENADAS;
-  } else {
-    cidades = [...new Set(todosImoveis.map(i => i.cidade).filter(Boolean))];
-  }
-  
-  const row = document.getElementById('cidades-row');
-  if (cidades.length < 2) { row.style.display='none'; return; }
-  row.innerHTML = '<span style="font-size:12px;color:var(--muted);align-self:center;margin-right:4px">Cidade:</span>'+
-    cidades.map(c => `<button class="chip cidade-chip" onclick="filtrarCidade(this,'${c}')">${c}</button>`).join('');
+// =================== FILTROS / AUTOCOMPLETE DE CIDADE ===================
+let sugestaoIdx = -1;
+
+function listaCidadesDisponiveis() {
+  if (typeof CIDADES_RS_ORDENADAS !== 'undefined') return CIDADES_RS_ORDENADAS;
+  return [...new Set(todosImoveis.map(i => i.cidade).filter(Boolean))];
 }
 
-function filtrarCidade(el, cidade) {
-  document.querySelectorAll('.cidade-chip').forEach(b => b.classList.remove('sel'));
-  if (cidadeFiltro === cidade) { cidadeFiltro = ''; }
-  else { cidadeFiltro = cidade; el.classList.add('sel'); }
+function onBuscaInput() {
+  const val = document.getElementById('busca-input').value;
+  // Se o usuário está editando o texto livremente, limpa a seleção exata de cidade
+  // (a busca por texto livre em filtrarImoveis já cobre bairro/endereço/cidade)
+  if (cidadeFiltro && normChave(cidadeFiltro) !== normChave(val)) cidadeFiltro = '';
+  mostrarSugestoesCidade(val);
   filtrarImoveis();
+}
+
+function mostrarSugestoesCidade(val) {
+  const box = document.getElementById('cidade-sugestoes');
+  const termo = normChave(val);
+  sugestaoIdx = -1;
+  if (!termo) { box.classList.remove('open'); box.innerHTML=''; return; }
+
+  const cidades = listaCidadesDisponiveis();
+  let match = cidades.filter(c => normChave(c).startsWith(termo));
+  if (match.length === 0) match = cidades.filter(c => normChave(c).includes(termo));
+  match = match.slice(0, 8);
+
+  if (match.length === 0) {
+    box.innerHTML = '<div class="cidade-sugestao-vazio">Nenhuma cidade encontrada</div>';
+    box.classList.add('open');
+    return;
+  }
+  box.innerHTML = match.map(c =>
+    `<div class="cidade-sugestao-item" onmousedown="selecionarCidadeSugestao('${c.replace(/'/g,"\\'")}')">📍 ${c}</div>`
+  ).join('');
+  box.classList.add('open');
+}
+
+function esconderSugestoesCidade() {
+  // pequeno atraso para permitir o onmousedown do item registrar antes do blur fechar a lista
+  setTimeout(() => {
+    const box = document.getElementById('cidade-sugestoes');
+    box.classList.remove('open');
+    box.innerHTML = '';
+    sugestaoIdx = -1;
+  }, 150);
+}
+
+function selecionarCidadeSugestao(cidade) {
+  const input = document.getElementById('busca-input');
+  input.value = cidade;
+  cidadeFiltro = cidade;
+  const box = document.getElementById('cidade-sugestoes');
+  box.classList.remove('open');
+  box.innerHTML = '';
+  filtrarImoveis();
+  input.focus();
+}
+
+function onBuscaKeydown(ev) {
+  const box = document.getElementById('cidade-sugestoes');
+  const itens = box.querySelectorAll('.cidade-sugestao-item');
+  if (!box.classList.contains('open') || !itens.length) return;
+
+  if (ev.key === 'ArrowDown') {
+    ev.preventDefault();
+    sugestaoIdx = Math.min(sugestaoIdx + 1, itens.length - 1);
+  } else if (ev.key === 'ArrowUp') {
+    ev.preventDefault();
+    sugestaoIdx = Math.max(sugestaoIdx - 1, 0);
+  } else if (ev.key === 'Enter') {
+    if (sugestaoIdx >= 0 && itens[sugestaoIdx]) {
+      ev.preventDefault();
+      itens[sugestaoIdx].dispatchEvent(new Event('mousedown'));
+    }
+    return;
+  } else if (ev.key === 'Escape') {
+    box.classList.remove('open');
+    return;
+  } else {
+    return;
+  }
+  itens.forEach((it, i) => it.classList.toggle('hl', i === sugestaoIdx));
+  itens[sugestaoIdx].scrollIntoView({ block: 'nearest' });
 }
 
 function toggleChip(el, filtro) {
@@ -554,14 +625,14 @@ function toggleChip(el, filtro) {
 }
 
 function filtrarImoveis() {
-  const busca = document.getElementById('busca-input').value.toLowerCase();
+  const busca = normChave(document.getElementById('busca-input').value);
   const tipo  = document.getElementById('busca-tipo').value.toLowerCase();
   const lista = todosImoveis.filter(im => {
-    const txt = ((im.titulo||'')+(im.endereco||'')+(im.bairro||'')+(im.cidade||'')+(im.tipo||'')).toLowerCase();
+    const txt = normChave((im.titulo||'')+' '+(im.endereco||'')+' '+(im.bairro||'')+' '+(im.cidade||'')+' '+(im.tipo||''));
     if (busca && !txt.includes(busca)) return false;
     if (tipo && im.tipo && im.tipo.toLowerCase() !== tipo) return false;
-    if (cidadeFiltro && im.cidade !== cidadeFiltro) return false;
-    for (const f of filtrosAtivos) if (!((im.comodidades||'').toLowerCase().includes(f))) return false;
+    if (cidadeFiltro && normChave(im.cidade) !== normChave(cidadeFiltro)) return false;
+    for (const f of filtrosAtivos) if (!(normChave(im.comodidades||'').includes(f))) return false;
     return true;
   });
   renderImoveis(lista);
