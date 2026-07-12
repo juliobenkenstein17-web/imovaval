@@ -94,6 +94,16 @@ textarea.cinp{flex:1;padding:10px 13px;border-radius:var(--r);border:.5px solid 
 textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
 .csend{width:42px;height:42px;background:var(--g);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .csend:hover{background:var(--gd)}
+.cattach{width:42px;height:42px;background:var(--bg2);border:.5px solid var(--bd2);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;color:var(--mu)}
+.cattach:hover{border-color:var(--g);color:var(--g)}
+.fotos-preview{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
+.fotos-preview:empty{display:none}
+.foto-item{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:.5px solid var(--bd)}
+.foto-item img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-item .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.foto-item.up{display:flex;align-items:center;justify-content:center;background:var(--bg2)}
+.foto-spin{width:18px;height:18px;border:2px solid var(--bd2);border-top-color:var(--g);border-radius:50%;animation:fspin .7s linear infinite}
+@keyframes fspin{to{transform:rotate(360deg)}}
 
 /* CARD RESUMO */
 .card-res{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:14px;margin-top:10px}
@@ -196,7 +206,7 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
             <div class="bub a">
               Olá! Sou o agente de cadastro. Descreva o imóvel que quero publicar e eu organizo tudo automaticamente! 🏠<br><br>
               Pode ser informal — como uma mensagem de WhatsApp.
-              <div class="warn-box">💡 Inclua: tipo, preço, endereço, quartos, imobiliária. Fotos: cole links do Google Drive ou Imgur.</div>
+              <div class="warn-box">💡 Inclua: tipo, preço, endereço, quartos, imobiliária. Fotos: clique no 📎 aqui embaixo pra enviar direto do computador/celular (ou cole links do Google Drive/Imgur se preferir).</div>
             </div>
           </div>
         </div>
@@ -204,7 +214,10 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
           <div class="av a">IA</div>
           <div class="dots"><div class="d"></div><div class="d"></div><div class="d"></div></div>
         </div>
+        <div class="fotos-preview" id="fotos-preview"></div>
         <div class="chat-input">
+          <input type="file" id="foto-input" accept="image/*" multiple style="display:none" />
+          <button class="cattach" id="chat-attach" type="button" title="Anexar fotos">📎</button>
           <textarea class="cinp" id="chat-inp" placeholder="Descreva o imóvel aqui..." rows="1"></textarea>
           <button class="csend" id="chat-send">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -246,6 +259,7 @@ textarea.cinp:focus{border-color:var(--g);background:var(--bg)}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
@@ -259,14 +273,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 var usuarioAtual = null;
 var perfilImob = null;
 var historicoChat = [];
 var dadosAtuais = null;
+var fotosAnexadas = []; // URLs das fotos ja enviadas via upload direto nesta conversa
 
 var CLAUDE_API = 'https://imovaval.vercel.app/api/claude';
-var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. Fotos Google Drive: converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título, preço, pergunte em texto simples. NÃO peça imobiliária nem whatsapp pois já estão no perfil do usuário logado.';
+var SYSTEM = 'Você é o agente de cadastro do ImovAval. Quando receber dados de um imóvel, responda APENAS com JSON válido sem nenhum texto extra nem code fences:\n{"tipo":"resumo","dados":{"titulo":"","tipo":"","preco":"","endereco":"","bairro":"","cidade":"","area":"","quartos":"","banheiros":"","garagem":"","comodidades":"","descricao":"","imobiliaria":"","whatsapp":"","foto":"","status":"ativo"},"msg":"confirmação"}\nCampo tipo: Apartamento|Casa|Studio|Kitnet|Cobertura. Preco só números. NÃO peça fotos nem pergunte sobre fotos — o usuário anexa as fotos diretamente pelo botão de clipe 📎 ao lado do campo de mensagem, fora do chat. Se mesmo assim ele colar um link do Google Drive ou Imgur, converta drive.google.com/file/d/ID/view para lh3.googleusercontent.com/d/ID, separadas por ponto e vírgula. Se faltar título ou preço, pergunte em texto simples. NÃO peça imobiliária nem whatsapp pois já estão no perfil do usuário logado.';
 
 function getSYSTEM() {
   var base = SYSTEM;
@@ -431,16 +447,71 @@ function converterFotos(links) {
   }).filter(Boolean).join(';');
 }
 
+// =================== UPLOAD DIRETO DE FOTOS (Firebase Storage) ===================
+function renderFotosPreview() {
+  var box = document.getElementById('fotos-preview');
+  box.innerHTML = fotosAnexadas.map(function(url, i) {
+    return '<div class="foto-item"><img src="'+url+'" /><button class="rm" onclick="removerFotoAnexada('+i+')">✕</button></div>';
+  }).join('');
+}
+
+window.removerFotoAnexada = function(idx) {
+  fotosAnexadas.splice(idx, 1);
+  renderFotosPreview();
+};
+
+function uploadUmaFoto(file) {
+  return new Promise(function(resolve, reject) {
+    if (!usuarioAtual) { reject(new Error('sem usuario')); return; }
+    if (!file.type || file.type.indexOf('image/') !== 0) { reject(new Error('nao e imagem')); return; }
+    if (file.size > 8 * 1024 * 1024) { reject(new Error('arquivo maior que 8MB')); return; }
+    var nomeArquivo = Date.now() + '-' + Math.random().toString(36).slice(2,8) + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g,'_');
+    var caminho = 'imoveis/' + usuarioAtual.uid + '/' + nomeArquivo;
+    var storageRef = ref(storage, caminho);
+    uploadBytes(storageRef, file).then(function() {
+      return getDownloadURL(storageRef);
+    }).then(resolve).catch(reject);
+  });
+}
+
+async function handleFotosSelecionadas(fileList) {
+  var arquivos = Array.prototype.slice.call(fileList);
+  if (!arquivos.length) return;
+  if (fotosAnexadas.length + arquivos.length > 12) {
+    addMsg('a', '⚠️ Máximo de 12 fotos por imóvel. Envie menos arquivos de cada vez.', false);
+    return;
+  }
+  var box = document.getElementById('fotos-preview');
+  for (var i = 0; i < arquivos.length; i++) {
+    var placeholder = document.createElement('div');
+    placeholder.className = 'foto-item up';
+    placeholder.innerHTML = '<div class="foto-spin"></div>';
+    box.appendChild(placeholder);
+    (function(file, ph) {
+      uploadUmaFoto(file).then(function(url) {
+        fotosAnexadas.push(url);
+        renderFotosPreview();
+      }).catch(function(e) {
+        ph.remove();
+        addMsg('a', '⚠️ Não consegui enviar "'+file.name+'": '+e.message, false);
+      });
+    })(arquivos[i], placeholder);
+  }
+}
+
 function mostrarResumo(dados, msg) {
   dadosAtuais = dados;
   var preco = dados.preco ? 'R$ '+Number(dados.preco).toLocaleString('pt-BR')+'/mês' : '—';
+  var qtdFotosLink = converterFotos(dados.foto||'').split(';').filter(Boolean).length;
+  var totalFotos = fotosAnexadas.length + qtdFotosLink;
   var campos = [
     ['Título',dados.titulo],['Tipo',dados.tipo],['Preço',preco],
     ['Endereço',dados.endereco],['Bairro',dados.bairro],['Cidade',dados.cidade],
     ['Área',dados.area?dados.area+'m²':'—'],['Quartos',dados.quartos||'—'],
     ['Banheiros',dados.banheiros||'—'],['Garagem',dados.garagem||'0'],
     ['Comodidades',dados.comodidades||'—'],['Imobiliária',dados.imobiliaria],
-    ['WhatsApp',dados.whatsapp||'—']
+    ['WhatsApp',dados.whatsapp||'—'],
+    ['Fotos', totalFotos ? totalFotos+' foto(s)' : '⚠️ nenhuma anexada']
   ];
   var rows = campos.map(function(c){
     return '<div class="res-row"><span class="res-l">'+c[0]+'</span><span class="res-v">'+(c[1]||'—')+'</span></div>';
@@ -453,7 +524,9 @@ window.publicarNoFirebase = async function() {
   if (!dadosAtuais || !usuarioAtual) return;
   try {
     var dados = Object.assign({}, dadosAtuais);
-    dados.foto = converterFotos(dados.foto || '');
+    var fotosLink = converterFotos(dados.foto || '').split(';').filter(Boolean);
+    var todasFotos = fotosAnexadas.concat(fotosLink);
+    dados.foto = todasFotos.join(';');
     dados.uid = usuarioAtual.uid;
     // Usa o nome do perfil se não foi informado no chat
     if (!dados.imobiliaria && perfilImob && perfilImob.nome) {
@@ -468,6 +541,8 @@ window.publicarNoFirebase = async function() {
     await addDoc(collection(db, 'imoveis'), dados);
     addMsg('a', '✅ Imóvel publicado com sucesso! Já aparece no site para os inquilinos.', false);
     dadosAtuais = null;
+    fotosAnexadas = [];
+    renderFotosPreview();
     carregarImoveis();
   } catch(e) {
     addMsg('a', '⚠️ Erro ao publicar. Tente novamente.', false);
@@ -481,6 +556,8 @@ window.corrigir = function() {
 window.novoImovel = function() {
   dadosAtuais = null;
   historicoChat = [];
+  fotosAnexadas = [];
+  renderFotosPreview();
   addMsg('a', 'Nova conversa iniciada! Me descreva o próximo imóvel. 🏠', false);
 };
 
@@ -529,6 +606,13 @@ document.getElementById('chat-inp').addEventListener('keydown', function(e){
 document.getElementById('chat-inp').addEventListener('input', function(){
   this.style.height='auto';
   this.style.height=Math.min(this.scrollHeight,100)+'px';
+});
+document.getElementById('chat-attach').addEventListener('click', function(){
+  document.getElementById('foto-input').click();
+});
+document.getElementById('foto-input').addEventListener('change', function(e){
+  handleFotosSelecionadas(e.target.files);
+  e.target.value = ''; // permite selecionar o mesmo arquivo de novo depois
 });
 </script>
 </body>
