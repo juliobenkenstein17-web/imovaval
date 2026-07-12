@@ -408,7 +408,7 @@ const PROXY_URL  = 'https://api.allorigins.win/raw?url=';
 // Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC3MQGAdiD01XcxpUdWpGpkOhfYEtaX2-4",
-  authDomain: "imovaval.com.br",
+  authDomain: "imovaval.firebaseapp.com",
   projectId: "imovaval",
   storageBucket: "imovaval.firebasestorage.app",
   messagingSenderId: "522957936692",
@@ -523,10 +523,18 @@ function mostrarVazio() {
 
 // =================== FILTROS ===================
 function renderCidades() {
-  const cidades = [...new Set(todosImoveis.map(i => i.cidade).filter(Boolean))];
+  // Se CIDADES_RS_ORDENADAS estiver disponível, usar aquela lista completa
+  let cidades;
+  
+  if (typeof CIDADES_RS_ORDENADAS !== 'undefined') {
+    cidades = CIDADES_RS_ORDENADAS;
+  } else {
+    cidades = [...new Set(todosImoveis.map(i => i.cidade).filter(Boolean))];
+  }
+  
   const row = document.getElementById('cidades-row');
   if (cidades.length < 2) { row.style.display='none'; return; }
-  row.innerHTML = '<span style="font-size:12px;color:var(--muted);align-self:center;margin-right:4px">Cidade:</span>' +
+  row.innerHTML = '<span style="font-size:12px;color:var(--muted);align-self:center;margin-right:4px">Cidade:</span>'+
     cidades.map(c => `<button class="chip cidade-chip" onclick="filtrarCidade(this,'${c}')">${c}</button>`).join('');
 }
 
@@ -880,6 +888,8 @@ function irSlide(idx) {
   if (counter) counter.textContent = `${idx+1} / ${window._carrTotal}`;
 }
 
+// Importar lista de cidades do RS
+// <script src="cidades-rs.js"></script>
 carregarImoveis();
 
 // Firebase Auth — mostra usuário logado na navbar
