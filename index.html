@@ -401,6 +401,8 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="cidades-rs.js"></script>
+
 <script>
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIMPmJXnIl-zc-HVtFSgOAc6n7GguXaSObW83bEQN0QyJ22E-oTGCWg7Dtd5jaY3vdPQWUPuA-5bIS/pub?gid=210326485&single=true&output=csv';
 const PROXY_URL  = 'https://api.allorigins.win/raw?url=';
@@ -888,8 +890,6 @@ function irSlide(idx) {
   if (counter) counter.textContent = `${idx+1} / ${window._carrTotal}`;
 }
 
-// Importar lista de cidades do RS
-// <script src="cidades-rs.js"></script>
 carregarImoveis();
 
 // Firebase Auth — mostra usuário logado na navbar
