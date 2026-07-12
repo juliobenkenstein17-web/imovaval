@@ -250,7 +250,7 @@
     <div class="metrics">
       <div class="metric"><div class="metric-label">Imóveis disponíveis</div><div class="metric-value" id="total-imoveis">—</div><div class="metric-sub">Atualizados em tempo real</div></div>
       <div class="metric"><div class="metric-label">Imobiliárias parceiras</div><div class="metric-value" id="total-imobs">—</div><div class="metric-sub">Verificadas na plataforma</div></div>
-      <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value">11.4k</div><div class="metric-sub">↑ +340 essa semana</div></div>
+      <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value" id="total-avaliacoes">—</div><div class="metric-sub">Verificadas na plataforma</div></div>
     </div>
     <div class="sec-head"><span class="sec-title" id="grid-titulo">Carregando imóveis...</span></div>
     <div id="imoveis-grid" class="imoveis-grid">
@@ -288,7 +288,7 @@
           <div class="av-form-inline" id="form-av">
             <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:16px">Avaliar este imóvel</div>
             <label class="form-label">Seu nome</label>
-            <input class="form-input" type="text" id="av-nome" placeholder="Ex: Maria F." />
+            <input class="form-input" type="text" id="av-nome" placeholder="Seu nome" />
             <label class="form-label">Período que morou</label>
             <div style="display:flex;gap:8px;margin-bottom:14px">
               <input class="form-input" type="month" id="av-inicio" style="flex:1;margin-bottom:0" />
@@ -314,16 +314,7 @@
           </div>
 
           <!-- LISTA DE AVALIAÇÕES -->
-          <div id="lista-avaliacoes">
-            <div class="review-card">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div class="rv-avatar" style="background:#E1F5EE;color:#085041">MF</div>
-                <div><div style="font-size:13px;font-weight:600">Maria F.</div><div style="font-size:11px;color:var(--muted)">Morou 18 meses</div></div>
-                <div style="margin-left:auto;color:#F59E0B;font-size:13px">★★★★★ <span style="color:var(--text);font-weight:700">4.9</span></div>
-              </div>
-              <p style="font-size:13px;color:var(--muted);line-height:1.65">Ótima experiência! Imóvel bem conservado e imobiliária muito atenciosa. Recomendo!</p>
-            </div>
-          </div>
+          <div id="lista-avaliacoes"></div>
         </div>
       </div>
 
@@ -379,13 +370,8 @@
       <button class="submit-btn" onclick="toast('✓ Avaliação publicada!')">Publicar avaliação</button>
     </div>
     <div style="font-family:var(--font-head);font-size:17px;font-weight:700;margin-bottom:14px">Avaliações recentes</div>
-    <div class="review-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div class="rv-avatar" style="background:#E1F5EE;color:#085041">MF</div>
-        <div><div style="font-size:13px;font-weight:600">Maria F.</div><div style="font-size:11px;color:var(--muted)">Março 2025</div></div>
-        <div style="margin-left:auto;color:#F59E0B">★★★★★ <span style="color:var(--text);font-weight:700">4.9</span></div>
-      </div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.65">Fui muito bem atendida. O imóvel estava em ótimo estado. Devolução do depósito rápida. Recomendo!</p>
+    <div id="lista-avaliacoes-recentes">
+      <div style="text-align:center;padding:24px 10px;color:var(--muted);font-size:13px">Carregando avaliações...</div>
     </div>
   </div>
 
@@ -401,7 +387,7 @@
     </div>
     <div class="metrics">
       <div class="metric"><div class="metric-label">Imóveis cadastrados</div><div class="metric-value" id="perfil-imoveis">—</div><div class="metric-sub">Via planilha</div></div>
-      <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value">11.4k</div><div class="metric-sub">Na plataforma</div></div>
+      <div class="metric"><div class="metric-label">Avaliações publicadas</div><div class="metric-value" id="perfil-avaliacoes">—</div><div class="metric-sub">Na plataforma</div></div>
       <div class="metric"><div class="metric-label">Imobiliárias parceiras</div><div class="metric-value" id="perfil-imobs">—</div><div class="metric-sub">Ativas</div></div>
     </div>
   </div>
@@ -486,8 +472,11 @@ async function carregarImoveis() {
     const imobs = [...new Set(todosImoveis.map(i => i.imobiliaria).filter(Boolean))];
     document.getElementById('total-imoveis').textContent = todosImoveis.length;
     document.getElementById('total-imobs').textContent = imobs.length;
+    if(document.getElementById('total-avaliacoes')) document.getElementById('total-avaliacoes').textContent = todasAvaliacoes.length;
+    renderAvaliacoesRecentes();
     if(document.getElementById('perfil-imoveis')) document.getElementById('perfil-imoveis').textContent = todosImoveis.length;
     if(document.getElementById('perfil-imobs')) document.getElementById('perfil-imobs').textContent = imobs.length;
+    if(document.getElementById('perfil-avaliacoes')) document.getElementById('perfil-avaliacoes').textContent = todasAvaliacoes.length;
     renderImobs(imobs);
     popularSelectImob(imobs);
   } catch(e) {
@@ -814,6 +803,31 @@ function carregarAvaliacoesDoImovel(imovelId) {
 
 function avSemDados() {
   return '<div style="text-align:center;padding:24px 10px;color:var(--muted);font-size:13px">Ainda não há avaliações para este imóvel.<br>Seja o primeiro a avaliar!</div>';
+}
+
+function renderAvaliacoesRecentes() {
+  const el = document.getElementById('lista-avaliacoes-recentes');
+  if (!el) return;
+  if (!todasAvaliacoes.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px 10px;color:var(--muted);font-size:13px">Ainda não há avaliações publicadas.<br>Seja o primeiro a avaliar um imóvel!</div>';
+    return;
+  }
+  el.innerHTML = todasAvaliacoes.slice().reverse().slice(0, 10).map(a => {
+    const nome = getCampo(a, 'Nome') || 'Anônimo';
+    const periodo = getCampo(a, 'Período', 'periodo');
+    const comentario = getCampo(a, 'Comentário', 'Comenário', 'comentario');
+    const ng = parseFloat(getCampo(a,'Nota geral')) || 0;
+    const iniciais = nome.slice(0,2).toUpperCase();
+    const stars = ng ? '★'.repeat(Math.round(ng)) + '☆'.repeat(5-Math.round(ng)) : '';
+    return `<div class="review-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="rv-avatar" style="background:var(--gl);color:var(--gd)">${iniciais}</div>
+        <div><div style="font-size:13px;font-weight:600">${nome}</div><div style="font-size:11px;color:var(--muted)">${periodo||'Ex-inquilino'}</div></div>
+        ${ng?`<div style="margin-left:auto;color:#F59E0B;font-size:13px">${stars} <span style="color:var(--text);font-weight:700">${ng.toFixed(1)}</span></div>`:''}
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65">${comentario||''}</p>
+    </div>`;
+  }).join('');
 }
 
 function toggleFormAv() {
